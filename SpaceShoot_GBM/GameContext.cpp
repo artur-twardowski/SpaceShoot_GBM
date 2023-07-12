@@ -25,6 +25,7 @@ namespace spaceshoot { namespace game {
         case ElementID::Bomb1:
         case ElementID::Bomb2:
         case ElementID::Bomb3:
+        case ElementID::Bomb4:
             ctx.score += 5;
             ctx.bombsCollected++;
             ctx.numBombs++;
@@ -34,6 +35,7 @@ namespace spaceshoot { namespace game {
         case ElementID::Bonus1:
         case ElementID::Bonus2:
         case ElementID::Bonus3:
+        case ElementID::Bonus4:
             ctx.score += 125;
             ctx.bonusBlocksCollected++;
            // gb.sound.tone(1000, 4000);
@@ -44,17 +46,21 @@ namespace spaceshoot { namespace game {
         }
     }
 
-    bool handleMiss(GameContext& ctx, ElementID blockType) {
+    bool handleMiss(GameContext& ctx, ElementID blockType, uint8_t row, uint8_t col) {
         switch (blockType) {
         case ElementID::Bomb1:
         case ElementID::Bomb2:
         case ElementID::Bomb3:
+        case ElementID::Bomb4:
+            game::setBlock(ctx, row, col, ElementID::BombStoned);
             ctx.bombsMissed++;
             return true;
 
         case ElementID::Bonus1:
         case ElementID::Bonus2:
         case ElementID::Bonus3:
+        case ElementID::Bonus4:
+            game::setBlock(ctx, row, col, ElementID::BonusStoned);
             ctx.bonusBlocksMissed++;
             return true;
 
@@ -81,12 +87,10 @@ namespace spaceshoot { namespace game {
           auto blk = game::getBlock(ctx, row, col);
           const AnimationSequence& animSeq = animSequences[static_cast<size_t>(blk)];
           if (blk != ElementID::None) {
-            if (game::isFunctionBlock(blk) && col == NUM_COLS / 2) {
-                miss = miss || handleMiss(ctx, blk);
-                game::setBlock(ctx, row, col, ElementID::Stone);
-            }
-
-            if (animSeq.speed && (gb.frameCount % animSeq.speed == 0)) {
+              /* TODO: magic number */
+            if (game::isFunctionBlock(blk) && col == 19) {
+                miss = miss || handleMiss(ctx, blk, row, col);
+            } else if (animSeq.speed && (gb.frameCount % animSeq.speed == 0)) {
                 game::setBlock(ctx, row, col, animSeq.next);
             }
           }
@@ -94,7 +98,7 @@ namespace spaceshoot { namespace game {
           if (missile && (blk != ElementID::None)) {
             if (handleHit(ctx, game::getBlock(ctx, row, col))) {
               ctx.hits++;
-              game::setBlockClearMissile(ctx, row, col, ElementID::StoneDestroyed1);
+              game::setBlockClearMissile(ctx, row, col, ElementID::Destroyed1);
               hit = true;
             }
           }
@@ -113,20 +117,25 @@ namespace spaceshoot { namespace game {
           }
           size_t col = NUM_COLS - 1;
           int randval = rand();
-          
-          int density = ctx.runTime >> 7;
-          if (density >= 18) {
-            density = 18;
-          }
-          
-          if (randval % 24 <= density) {
-              game::setBlock(ctx, row, col, ElementID::Stone);
-          } else if ((randval & 0x7F) == 0x12) {
-              game::setBlock(ctx, row, col, ElementID::Bomb1);
-          } else if ((randval & 0x1FF) == 0x15) {
-              game::setBlock(ctx, row, col, ElementID::Bonus1);
+
+          if (ctx.runTime <= GAME_RUN_TIME_LIMIT - 8 * NUM_COLS) {
+              
+              int density = ctx.runTime >> 7;
+              if (density >= 18) {
+                density = 18;
+              }
+              
+              if (randval % 24 <= density) {
+                  game::setBlock(ctx, row, col, ElementID::Stone);
+              } else if ((randval & 0x7F) == 0x12) {
+                  game::setBlock(ctx, row, col, ElementID::Bomb1);
+              } else if ((randval & 0x1FF) == 0x15) {
+                  game::setBlock(ctx, row, col, ElementID::Bonus1);
+              } else {
+                  game::setBlock(ctx, row, col, ElementID::None);
+              }
           } else {
-              game::setBlock(ctx, row, col, ElementID::None);
+            game::setBlock(ctx, row, col, ElementID::None);
           }
         }
       }
@@ -169,17 +178,24 @@ namespace spaceshoot { namespace game {
     GameState run(GameContext& ctx, Image& tileset) {
         const ColorIndex COLOR_BAR_BACKGROUND = (ColorIndex)0;
         const ColorIndex COLOR_SCORE = (ColorIndex)1;
+        const ColorIndex COLOR_BOMBS = (ColorIndex)2;
+        const ColorIndex COLOR_TIME = (ColorIndex)3;
         Color barsPalettes[16][8];
+        uint8_t paletteIndex = 1;
         for (size_t ix = 0; ix < 8; ix++) {
             memcpy(barsPalettes[ix], Gamebuino_Meta::defaultColorPalette, sizeof(barsPalettes[ix]));
             
-            barsPalettes[ix][(int)COLOR_BAR_BACKGROUND] = (Color) Gamebuino_Meta::rgb888Torgb565({0, 0, (7 - ix) * 32});
+            barsPalettes[ix][(int)COLOR_BAR_BACKGROUND] = (Color) Gamebuino_Meta::rgb888Torgb565({0, 0, (7 - ix) * 24});
             barsPalettes[ix][(int)COLOR_SCORE] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (7 - ix) * 32, 255});
+            barsPalettes[ix][(int)COLOR_BOMBS] = (Color) Gamebuino_Meta::rgb888Torgb565({255, (7 - ix), 0});
+            barsPalettes[ix][(int)COLOR_TIME] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (7 - ix/2) * 64, 0});
 
-            gb.tft.colorCells.palettes[ix+1] = barsPalettes[ix];
-            gb.tft.colorCells.paletteToLine[ix] = ix + 1;
-            gb.tft.colorCells.paletteToLine[SCREEN_HEIGHT - ix - 1] = ix + 1;
+            gb.tft.colorCells.palettes[paletteIndex] = barsPalettes[ix];
+            gb.tft.colorCells.paletteToLine[ix] = paletteIndex;
+            gb.tft.colorCells.paletteToLine[SCREEN_HEIGHT - ix - 1] = paletteIndex;
+            paletteIndex++;
         }
+        tileset::applyPalette(paletteIndex++, 8, SCREEN_HEIGHT - 8);
         gb.tft.colorCells.enabled = true;
       GameState result;
       while (1) {
@@ -189,7 +205,7 @@ namespace spaceshoot { namespace game {
         //result = GameState::Continue;
 
         size_t drawY = GAMEBOARD_Y;
-        size_t spriteDx = /* ((ctx.runTime - 1) >> 1) & 0x03 */ 0;
+        size_t spriteDx = ((ctx.runTime - 1) >> 1) & 0x03;
         const size_t WARNING_X = NUM_COLS / 2 + 5;
         gb.display.setColor(INDEX_BLACK);
         gb.display.clear();
@@ -201,11 +217,11 @@ namespace spaceshoot { namespace game {
           gb.display.setColor(COLOR_SCORE);
           gb.display.printf(0, 1, "%5d", ctx.score);
           
-          gb.display.setColor(RED);
+          gb.display.setColor(COLOR_BOMBS);
           gb.display.printf(40, 1, "%2d", ctx.numBombs);
       
           unsigned int remainingTime = (GAME_RUN_TIME_LIMIT - ctx.runTime) / TARGET_FPS;
-          gb.display.setColor(LIGHTBLUE);
+          gb.display.setColor(COLOR_TIME);
           gb.display.printf(60, 1, "%d:%02d", remainingTime / 60, remainingTime % 60);
         
           gb.display.setColor(LIGHTBLUE);
@@ -244,14 +260,14 @@ namespace spaceshoot { namespace game {
         for (unsigned int y = 0; y < NUM_ROWS; y++) {
           size_t playerY = y * PLAYER_HEIGHT + GAMEBOARD_Y;
           if (y == ctx.playerPosition) {
-              tileset::draw(tileset, 0, playerY, ElementID::Bomb1);
-              tileset::draw(tileset, BLOCK_WIDTH, playerY, ElementID::Bomb2);
+              tileset::draw(tileset, 0, playerY, ElementID::ShipTail);
+              tileset::draw(tileset, BLOCK_WIDTH, playerY, ElementID::ShipFrontNormal);
           } else {
               tileset::draw(tileset, 0, playerY, ElementID::None);
               tileset::draw(tileset, BLOCK_WIDTH, playerY, ElementID::None);
           }
         }
-      
+
         if (result != GameState::Continue) {
           return result;
         }

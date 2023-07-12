@@ -27,8 +27,8 @@ namespace spaceshoot {
     }
 
     void main() {
-        spaceshoot::titlescreen::run();
-        spaceshoot::mainmenu::run(ctx);
+ //       spaceshoot::titlescreen::run();
+ //       spaceshoot::mainmenu::run(ctx);
         spaceshoot::game::restart(ctx);
         GameState state = spaceshoot::game::run(ctx, tileSet);
 

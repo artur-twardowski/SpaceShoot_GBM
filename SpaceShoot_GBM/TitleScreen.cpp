@@ -4,6 +4,11 @@
 #include "Configuration.h"
 #include "Gamebuino-Meta-ADTCRV.h"
 #include <stdint.h>
+#include "Tileset.h"
+
+namespace spaceshoot {
+    extern Image tileSet;
+}
 
 namespace spaceshoot { namespace titlescreen {
 
@@ -1341,6 +1346,7 @@ namespace spaceshoot { namespace titlescreen {
         
         while (1) {
             gb.display.clear();
+
             TIMELINE(0, 0) {
                 img.init(devLogoData);
             }
@@ -1418,7 +1424,6 @@ namespace spaceshoot { namespace titlescreen {
                     frame_index++;
                 }
             }
-
             if (frame_index != 160) frame_index++;
             if (frame_index == 171) break;
         }
