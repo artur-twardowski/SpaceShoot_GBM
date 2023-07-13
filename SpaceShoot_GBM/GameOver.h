@@ -4,7 +4,7 @@
 #include "GameContext.h"
 
 namespace spaceshoot { namespace gameover {
-    void run(GameContext& ctx, bool timedOut);
+    bool run(GameContext& ctx, bool timedOut);
 }}
 
 #endif // SST_GAMEOVER_H

@@ -6,6 +6,9 @@
 #include "Tileset.h"
 
 struct GameContext {
+    uint8_t difficultyLevel;
+    uint8_t flags;
+
     uint8_t playerPosition;
     uint32_t score;
     uint8_t numBombs;
@@ -30,6 +33,7 @@ enum struct GameState {
 
 const uint8_t BLOCK_MASK = 0x1F;
 const uint8_t BLOCK_MISSILE = 0x20;
+const uint8_t FLAG_SMOOTH_SCROLLING = 0x01;
 
 namespace spaceshoot { namespace game {
     void restart(GameContext& ctx);

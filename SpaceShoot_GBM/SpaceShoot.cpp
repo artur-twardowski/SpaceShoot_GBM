@@ -24,18 +24,26 @@ namespace spaceshoot {
         gb.tft.colorCells.palettes = palettes;
 
         spaceshoot::tileset::load(tileSet);
+        ctx.difficultyLevel = 2;
     }
 
     void main() {
- //       spaceshoot::titlescreen::run();
- //       spaceshoot::mainmenu::run(ctx);
-        spaceshoot::game::restart(ctx);
-        GameState state = spaceshoot::game::run(ctx, tileSet);
+        spaceshoot::titlescreen::run();
 
-        if (state == GameState::GameOverTimeout) {
-            spaceshoot::gameover::run(ctx, true);
-        } else if (state == GameState::GameOverLost) {
-            spaceshoot::gameover::run(ctx, false);
+        bool showMenu = true;
+        while (1) {
+            if (showMenu) {
+                spaceshoot::mainmenu::run(ctx);
+            }
+
+            spaceshoot::game::restart(ctx);
+            GameState state = spaceshoot::game::run(ctx, tileSet);
+
+            if (state == GameState::GameOverTimeout) {
+                showMenu = spaceshoot::gameover::run(ctx, true);
+            } else if (state == GameState::GameOverLost) {
+                showMenu = spaceshoot::gameover::run(ctx, false);
+            }
         }
     }
 }

@@ -79,7 +79,7 @@ namespace spaceshoot { namespace gameover {
       }
     }
 
-    void run(GameContext& ctx, bool timedOut) {
+    bool run(GameContext& ctx, bool timedOut) {
       uint32_t accuracy;
       uint32_t accuracyPoints;
       uint32_t bonus;
@@ -95,9 +95,9 @@ namespace spaceshoot { namespace gameover {
         accuracyPoints = accuracy * 2;
       }
 
-      bonus = ctx.numBombs * 50;
+      bonus = ctx.numBombs * 100;
       if (timedOut) {
-        bonus += 300;
+        bonus += 500;
       }
 
       ctx.score = 0;
@@ -132,7 +132,12 @@ namespace spaceshoot { namespace gameover {
         processEvents();
 
         if (showPhaseCounter >= 100) {
-            if (gb.buttons.pressed(BUTTON_A)) break;
+            if (gb.buttons.pressed(BUTTON_A)) {
+                return false; /* Do not invoke the menu, jump right away to the game */
+            }
+            if (gb.buttons.pressed(BUTTON_B)) {
+                return true; /* Go back to menu */
+            }
         }
       }
 

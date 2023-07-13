@@ -6,7 +6,6 @@
 const size_t NUM_ROWS=20;
 const size_t NUM_COLS=39;
 const unsigned int TARGET_FPS = 21;
-const unsigned int GAME_RUN_TIME_LIMIT = 120 * TARGET_FPS;
 
 #define HIGH_RESOLUTION_MODE
 
