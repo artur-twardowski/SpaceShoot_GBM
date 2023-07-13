@@ -21,6 +21,8 @@ namespace spaceshoot { namespace mainmenu {
     const char STR_SMOOTH_SCROLLING[] = "SMOOTH SCROLLING";
     const char STR_YES[] = "< YES  ";
     const char STR_NO[] = "  NO >";
+    
+    const char STR_SHOW_PROFILING_INFO[] = "SHOW DATA FOR NERDS";
 
     enum struct VisibleScreen {
         Main = 0,
@@ -37,8 +39,8 @@ namespace spaceshoot { namespace mainmenu {
         drawMenuPosition(SCREEN_WIDTH / 2 - 4 / 2 * strlen(str), y, str, selected);
     }
 
-    static void drawMenuPositionParam(uint8_t x, uint8_t y, const char* str, int selectedPosition, int assignedPosition) {
-        if (selectedPosition == assignedPosition) {
+    static void drawMenuPositionParam(uint8_t x, uint8_t y, const char* str, bool selected) {
+        if (selected) {
             gb.display.setColor(INDEX_LIGHTGREEN);
         } else {
             gb.display.setColor(INDEX_GREEN);
@@ -65,11 +67,11 @@ namespace spaceshoot { namespace mainmenu {
                     position--;
             }
             if (buttonPressed(BUTTON_DOWN)) {
-                size_t lastPosition;
+                uint16_t lastPosition;
                 if (screen == VisibleScreen::Main) {
-                    lastPosition = 4;
+                    lastPosition = static_cast<uint16_t>(MenuPosition::Count) - 1;
                 } else {
-                    lastPosition = 1;
+                    lastPosition = 2;
                 }
                 if (position < lastPosition)
                     position++;
@@ -79,6 +81,7 @@ namespace spaceshoot { namespace mainmenu {
                     switch (position) {
                     case 0: if (ctx.difficultyLevel > 0) ctx.difficultyLevel--; break;
                     case 1: ctx.flags &= ~FLAG_SMOOTH_SCROLLING; break;
+                    case 2: ctx.flags &= ~FLAG_SHOW_PROFILING_INFO; break;
                     }
                 }
             }
@@ -87,6 +90,7 @@ namespace spaceshoot { namespace mainmenu {
                     switch (position) {
                     case 0: if (ctx.difficultyLevel < 5) ctx.difficultyLevel++; break;
                     case 1: ctx.flags |= FLAG_SMOOTH_SCROLLING; break;
+                    case 2: ctx.flags |= FLAG_SHOW_PROFILING_INFO; break;
                     }
                 }
             }
@@ -107,16 +111,20 @@ namespace spaceshoot { namespace mainmenu {
             }
 
             if (screen == VisibleScreen::Main) {
-                drawMenuPositionHCentered(20, STR_NEW_GAME, position == 0);
-                drawMenuPositionHCentered(40, STR_STORY, position == 1);
-                drawMenuPositionHCentered(60, STR_INSTRUCTIONS, position == 2);
-                drawMenuPositionHCentered(80, STR_SETTINGS, position == 3);
-                drawMenuPositionHCentered(100, STR_RETURN_TO_BOOTLOADER, position == 4);
+                uint8_t y = 0;
+                drawMenuPositionHCentered((y+=20), STR_NEW_GAME, static_cast<MenuPosition>(position) == MenuPosition::NewGame);
+#ifdef STORY_IMPLEMENTED
+                drawMenuPositionHCentered((y+=20), STR_STORY, static_cast<MenuPosition>(position) == MenuPosition::Story);
+#endif
+                drawMenuPositionHCentered((y+=20), STR_INSTRUCTIONS, static_cast<MenuPosition>(position) == MenuPosition::Instructions);
+                drawMenuPositionHCentered((y+=20), STR_SETTINGS, static_cast<MenuPosition>(position) == MenuPosition::Settings);
+                drawMenuPositionHCentered((y+=20), STR_RETURN_TO_BOOTLOADER, static_cast<MenuPosition>(position) == MenuPosition::ReturnToBootloader);
             }
 
             if (screen == VisibleScreen::Settings) {
                 drawMenuPosition(0, 30, STR_GAME_DIFFICULTY, position == 0);
                 drawMenuPosition(0, 50, STR_SMOOTH_SCROLLING, position == 1);
+                drawMenuPosition(0, 70, STR_SHOW_PROFILING_INFO, position == 2);
 
                 const char* s;
                 switch (ctx.difficultyLevel) {
@@ -129,7 +137,7 @@ namespace spaceshoot { namespace mainmenu {
                 }
 
                 dx = SCREEN_WIDTH - 4 * strlen(s);
-                drawMenuPositionParam(dx, 30, s, position, 0);
+                drawMenuPositionParam(dx, 30, s, position == 0);
 
                 if (ctx.flags & FLAG_SMOOTH_SCROLLING) {
                     s = STR_YES;
@@ -138,7 +146,16 @@ namespace spaceshoot { namespace mainmenu {
                 }
 
                 dx = SCREEN_WIDTH - 4 * strlen(s);
-                drawMenuPositionParam(dx, 50, s, position, 1);
+                drawMenuPositionParam(dx, 50, s, position == 1);
+
+                if (ctx.flags & FLAG_SHOW_PROFILING_INFO) {
+                    s = STR_YES;
+                } else {
+                    s = STR_NO;
+                }
+
+                dx = SCREEN_WIDTH - 4 * strlen(s);
+                drawMenuPositionParam(dx, 70, s, position == 2);
             }
 
         }

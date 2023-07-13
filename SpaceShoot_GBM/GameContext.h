@@ -20,6 +20,7 @@ struct GameContext {
     uint16_t shoots;
     uint16_t hits;
     uint8_t salvoCounter;
+    uint16_t blocksPresent;
     uint8_t gameField[NUM_ROWS][NUM_COLS];
 
     GameContext() = default;
@@ -31,9 +32,10 @@ enum struct GameState {
   Continue, GameOverTimeout, GameOverLost
 };
 
-const uint8_t BLOCK_MASK = 0x1F;
-const uint8_t BLOCK_MISSILE = 0x20;
+const uint8_t BLOCK_MASK = 0x3F;
+const uint8_t BLOCK_MISSILE = 0x40;
 const uint8_t FLAG_SMOOTH_SCROLLING = 0x01;
+const uint8_t FLAG_SHOW_PROFILING_INFO = 0x02;
 
 namespace spaceshoot { namespace game {
     void restart(GameContext& ctx);

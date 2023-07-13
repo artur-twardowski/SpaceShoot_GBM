@@ -16,6 +16,7 @@ enum struct ElementID: uint8_t {
     ShipTail, ShipFrontNormal, ShipFiringLeft, ShipFiringRight, ShipFiringBoth,
     ShipFiringGlowLeft, ShipFiringGlowRight, ShipTailFire,
     ShipTailExploding, ShipFrontExploding,
+    Debris1, Debris2, Debris3, Debris4, Debris5, Debris6, Debris7, Debris8,
 
     Count
 };

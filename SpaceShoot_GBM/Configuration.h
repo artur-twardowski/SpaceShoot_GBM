@@ -3,6 +3,8 @@
 
 #include "Gamebuino-Meta-ADTCRV.h"
 
+extern const char VERSION[];
+
 const size_t NUM_ROWS=20;
 const size_t NUM_COLS=39;
 const unsigned int TARGET_FPS = 21;

@@ -7,10 +7,14 @@ namespace spaceshoot { namespace mainmenu {
 
     enum struct MenuPosition {
         NewGame = 0,
+#ifdef STORY_IMPLEMENTED
         Story,
+#endif
         Instructions,
         Settings,
-        ReturnToBootloader
+        ReturnToBootloader,
+
+        Count
     };
 
     MenuPosition run(GameContext& ctx);

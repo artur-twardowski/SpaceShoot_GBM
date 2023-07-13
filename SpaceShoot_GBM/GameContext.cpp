@@ -49,6 +49,14 @@ namespace spaceshoot { namespace game {
     bool handleHit(GameContext& ctx, ElementID blockType) {
         switch (blockType) {
         case ElementID::Stone:
+        case ElementID::Debris1:
+        case ElementID::Debris2:
+        case ElementID::Debris3:
+        case ElementID::Debris4:
+        case ElementID::Debris5:
+        case ElementID::Debris6:
+        case ElementID::Debris7:
+        case ElementID::Debris8:
             ctx.score += 5;
             return true;
 
@@ -103,10 +111,6 @@ namespace spaceshoot { namespace game {
     static GameState updateGameField(GameContext& ctx, uint8_t prescale) {
       const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
 
-      if (ctx.runTime == params.maxRunTime) {
-        return GameState::GameOverTimeout;
-      }
-
       bool hit = false;
       bool miss = false;
       
@@ -129,6 +133,7 @@ namespace spaceshoot { namespace game {
           if (missile && (blk != ElementID::None)) {
             if (handleHit(ctx, game::getBlock(ctx, row, col))) {
               ctx.hits++;
+              ctx.blocksPresent--;
               game::setBlockClearMissile(ctx, row, col, ElementID::Destroyed1);
               hit = true;
             }
@@ -137,7 +142,7 @@ namespace spaceshoot { namespace game {
         game::setMissile(ctx, row, 0, false);
 
         
-        /* Move the stones left */
+        /* Move the blocks left */
         if (prescale == 0) {
           if (game::getBlock(ctx, row, 0) != ElementID::None) {
             return GameState::GameOverLost;
@@ -157,21 +162,33 @@ namespace spaceshoot { namespace game {
               }
               
               game::setBlock(ctx, row, col, ElementID::None);
+              bool blockPlaced = false;
               if (randval % 24 <= density) {
-                  game::setBlock(ctx, row, col, ElementID::Stone);
+                  uint8_t b = (uint8_t)ElementID::Debris1 + ((randval + row) & 0x07);
+                  game::setBlock(ctx, row, col, static_cast<ElementID>(b));
+                  blockPlaced = true;
               }
               if ((randval & 0x0FFF) <=params.bombProbability) {
                   game::setBlock(ctx, row, col, ElementID::Bomb1);
+                  blockPlaced = true;
               }
               if ((randval & 0x0FFF) <= params.bonusProbability) {
                   game::setBlock(ctx, row, col, ElementID::Bonus1);
+                  blockPlaced = true;
               } 
+
+              if (blockPlaced) ctx.blocksPresent++;
           } else {
             game::setBlock(ctx, row, col, ElementID::None);
           }
         }
       }
       ctx.runTime++;
+      if (ctx.runTime > params.maxRunTime - 8 * NUM_COLS && ctx.blocksPresent == 0) {
+          return GameState::GameOverTimeout;
+      } else if (ctx.runTime >= params.maxRunTime) {
+          return GameState::GameOverTimeout;
+      }
       if (hit) {
         gb.sound.tone(240, 60);
       }
@@ -284,13 +301,16 @@ namespace spaceshoot { namespace game {
         gb.display.setColor(COLOR_TIME);
         gb.display.printf(60, 1, "%d:%02d", remainingTime / 60, remainingTime % 60);
 
-        /* Profiling information for nerds */
-        gb.display.setColor(COLOR_SCORE);
-        uint32_t fps = 100000000 / gb.frameDurationMicros;
-        //if (fps > TARGET_FPS * 100) {
-        //  fps = TARGET_FPS * 100;
-        //}
-        gb.display.printf(0, SCREEN_HEIGHT-7, "FPS: %2d.%02d / %2d", fps / 100, fps % 100, TARGET_FPS);
+        if (ctx.flags & FLAG_SHOW_PROFILING_INFO) {
+            /* Profiling information for nerds */
+            gb.display.setColor(COLOR_SCORE);
+            uint32_t fps = 10000000 / gb.frameDurationMicros;
+            //if (fps > TARGET_FPS * 100) {
+            //  fps = TARGET_FPS * 100;
+            //}
+            gb.display.printf(0, SCREEN_HEIGHT-7, "FPS: %2d.%02d, B: %3d, H/S: %4d/%4d",
+                    fps / 10, fps % 10, ctx.blocksPresent, ctx.hits, ctx.shoots);
+        }
     }
 
     static inline void drawPlayer(uint8_t playerPositionX, uint8_t playerPositionY, tileset::ElementID* playerTiles, Image& tileSet) {
@@ -316,7 +336,7 @@ namespace spaceshoot { namespace game {
         updateAnimation(playerTiles, 4);
     }
 
-    static inline void handleButtons(GameContext& ctx, tileset::ElementID* playerTiles) {
+    static inline void handleButtons(GameContext& ctx, tileset::ElementID* playerTiles, DrawScene& drawScene) {
         if (buttonPressed(BUTTON_UP)) {
             if (ctx.playerPosition > 0)
                 ctx.playerPosition--;
@@ -340,6 +360,9 @@ namespace spaceshoot { namespace game {
             playerTiles[PLAYER_TILE_FRONT_LEFT] = tileset::ElementID::ShipFiringGlowLeft;
             playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::ShipFiringGlowRight;
             playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringBoth;
+        }
+        if (gb.buttons.pressed(BUTTON_MENU)) {
+            drawScene = DrawScene::Losing;
         }
     }
 
@@ -410,7 +433,7 @@ namespace spaceshoot { namespace game {
         drawPlayer(shipX, ctx.playerPosition, playerTiles, tileset);
 
         if (drawScene == DrawScene::Gameplay) {
-            handleButtons(ctx, playerTiles);
+            handleButtons(ctx, playerTiles, drawScene);
         }
 
         continueSalvo(ctx);

@@ -1363,10 +1363,10 @@ namespace spaceshoot { namespace titlescreen {
                 gb.display.drawImage(0, 0, img);
 
                 TIMELINE(26, 64) {
-                    TIMELINE(26, 41) {
+                    TIMELINE(26, 40) {
                         gb.display.setColor(frame_index - 26);
                     }
-                    TIMELINE(42, 64) {
+                    TIMELINE(41, 64) {
                         gb.display.setColor(0x0E);
                     }
                     gb.display.print(58, 100, "PRESENTS...");
@@ -1414,6 +1414,10 @@ namespace spaceshoot { namespace titlescreen {
                     gb.display.setPalette((Color*)pal);
                 }
                 gb.display.drawImage(0, 0, img);
+                TIMELINE(160, 171) {
+                    gb.display.setColor(8);
+                    gb.display.print(SCREEN_WIDTH - strlen(VERSION) * 4, 120, VERSION);
+                }
             }
             processEvents();
             if (buttonPressed(BUTTON_A)) {

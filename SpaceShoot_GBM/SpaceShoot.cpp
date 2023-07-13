@@ -7,6 +7,8 @@
 #include "TitleScreen.h"
 #include "InstructionsContext.h"
 
+const char VERSION[] = "v0.1-R713";
+
 namespace spaceshoot {
 
     Image tileSet;
@@ -42,9 +44,6 @@ namespace spaceshoot {
                 switch (menuPosition) {
                     case mainmenu::MenuPosition::Instructions:
                         instructions::run(tileSet);
-                        continue;
-
-                    case mainmenu::MenuPosition::Story:
                         continue;
 
                     case mainmenu::MenuPosition::NewGame:
