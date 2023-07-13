@@ -8,7 +8,7 @@ namespace spaceshoot { namespace mainmenu {
     const char STR_STORY[] = "STORY";
     const char STR_INSTRUCTIONS[] = "INSTRUCTIONS";
     const char STR_SETTINGS[] = "SETTINGS";
-    const char STR_RETURN_TO_BOOTLOADER[] = "RETURN TO BOOTLOADER";
+    const char STR_RETURN_TO_BOOTLOADER[] = "RETURN TO LOADER";
 
     const char STR_GAME_DIFFICULTY[] = "DIFFICULTY";
     const char STR_GAME_DIFFICULTY_L1[] = "  VERY EASY >";
@@ -21,14 +21,6 @@ namespace spaceshoot { namespace mainmenu {
     const char STR_SMOOTH_SCROLLING[] = "SMOOTH SCROLLING";
     const char STR_YES[] = "< YES  ";
     const char STR_NO[] = "  NO >";
-
-    enum struct RootMenuPositions {
-        NewGame = 0,
-        Story,
-        Instructions,
-        Settings,
-        ReturnToBootloader
-    };
 
     enum struct VisibleScreen {
         Main = 0,
@@ -55,7 +47,7 @@ namespace spaceshoot { namespace mainmenu {
         gb.display.print(x, y, str);
     }
 
-    void run(GameContext& ctx) {
+    MenuPosition run(GameContext& ctx) {
         int position = 0;
         size_t dx;
         VisibleScreen screen = VisibleScreen::Main;
@@ -100,12 +92,11 @@ namespace spaceshoot { namespace mainmenu {
             }
             if (buttonPressed(BUTTON_A)) {
                 if (screen == VisibleScreen::Main) {
-                    if (static_cast<RootMenuPositions>(position) == RootMenuPositions::NewGame) {
-                        break;
-                    }
-                    if (static_cast<RootMenuPositions>(position) == RootMenuPositions::Settings) {
+                    if (static_cast<MenuPosition>(position) == MenuPosition::Settings) {
                         screen = VisibleScreen::Settings;
                         position = 0;
+                    } else {
+                        return static_cast<MenuPosition>(position);
                     }
                 }
             }

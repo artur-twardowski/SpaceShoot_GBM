@@ -6,7 +6,7 @@
 
 namespace spaceshoot { namespace tileset {
 
-enum struct ElementID {
+enum struct ElementID: uint8_t {
     None = 0,
     Stone,
     Bomb1, Bomb2, Bomb3, Bomb4,
@@ -29,8 +29,24 @@ struct AnimationSequence {
 extern const AnimationSequence animSequences[];
 
 void load(Image& tileset);
-void draw(Image& tileset, uint8_t x, uint8_t y, ElementID id);
+void draw(Image& tileset, uint16_t x, uint16_t y, ElementID id);
 void applyPalette(uint8_t paletteSlot, uint8_t firstRow, uint8_t lastRow);
+
+static inline void updateAnimation(ElementID& element) {
+    const AnimationSequence& animSeq = animSequences[static_cast<int>(element)];
+    if (animSeq.speed && (gb.frameCount % animSeq.speed == 0)) {
+        element = animSeq.next;
+    }
+}
+
+static inline void updateAnimation(ElementID* memArea, size_t elementCount) {
+    ElementID* end = memArea + elementCount;
+    while (memArea < end) {
+        updateAnimation(*memArea++);
+    }
+}
+
+//static inline void updateAnimation
 
 }} // namespace spaceshoot::tileset
 

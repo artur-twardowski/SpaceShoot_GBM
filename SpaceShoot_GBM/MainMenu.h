@@ -5,7 +5,15 @@
 
 namespace spaceshoot { namespace mainmenu {
 
-    void run(GameContext& ctx);
+    enum struct MenuPosition {
+        NewGame = 0,
+        Story,
+        Instructions,
+        Settings,
+        ReturnToBootloader
+    };
+
+    MenuPosition run(GameContext& ctx);
 
 }}
 

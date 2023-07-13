@@ -256,8 +256,8 @@ namespace spaceshoot { namespace game {
                 }
 
                 if (getMissile(ctx, y, x)) {
-                    gb.display.setColor(INDEX_LIGHTBLUE);
-                    gb.display.drawFastHLine(drawX, drawY+1, BLOCK_WIDTH-1);
+                    gb.display.setColor(12);
+                    gb.display.drawFastVLine(drawX + 1, drawY + 1, BLOCK_HEIGHT - 2);
                 }
 
                 drawX -= BLOCK_WIDTH;
@@ -313,38 +313,33 @@ namespace spaceshoot { namespace game {
             tileset::draw(tileSet, playerPositionX - BLOCK_WIDTH, playerPositionY * PLAYER_HEIGHT + GAMEBOARD_Y, ElementID::ShipTailFire);
         }
         /* Update animated tiles */
-        for (unsigned int ix = 0; ix < 4; ix++) {
-            const AnimationSequence& animSeq = animSequences[static_cast<size_t>(playerTiles[ix])];
-            if (animSeq.speed && (gb.frameCount % animSeq.speed == 0)) {
-                playerTiles[ix] = animSeq.next;
-            }
-        }
+        updateAnimation(playerTiles, 4);
     }
 
     static inline void handleButtons(GameContext& ctx, tileset::ElementID* playerTiles) {
         if (buttonPressed(BUTTON_UP)) {
-          if (ctx.playerPosition > 0)
-            ctx.playerPosition--;
+            if (ctx.playerPosition > 0)
+                ctx.playerPosition--;
         }
         if (buttonPressed(BUTTON_DOWN)) {
-          if (ctx.playerPosition < NUM_ROWS - 1)
-            ctx.playerPosition++;
+            if (ctx.playerPosition < NUM_ROWS - 1)
+                ctx.playerPosition++;
         }
         if (buttonPressed(BUTTON_A)) {
-          shoot(ctx);
-          if (ctx.shoots & 0x01) {
-              playerTiles[PLAYER_TILE_FRONT_LEFT] = tileset::ElementID::ShipFiringGlowLeft;
-              playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringLeft;
-          } else {
-              playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::ShipFiringGlowRight;
-              playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringRight;
-          }
+            shoot(ctx);
+            if (ctx.shoots & 0x01) {
+                playerTiles[PLAYER_TILE_FRONT_LEFT] = tileset::ElementID::ShipFiringGlowLeft;
+                playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringLeft;
+            } else {
+                playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::ShipFiringGlowRight;
+                playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringRight;
+            }
         }
         if (gb.buttons.pressed(BUTTON_B)) {
-          salvo(ctx);
-              playerTiles[PLAYER_TILE_FRONT_LEFT] = tileset::ElementID::ShipFiringGlowLeft;
-              playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::ShipFiringGlowRight;
-          playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringBoth;
+            salvo(ctx);
+            playerTiles[PLAYER_TILE_FRONT_LEFT] = tileset::ElementID::ShipFiringGlowLeft;
+            playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::ShipFiringGlowRight;
+            playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringBoth;
         }
     }
 

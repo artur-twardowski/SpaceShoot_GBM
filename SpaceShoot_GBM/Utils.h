@@ -8,5 +8,5 @@ static inline void processEvents() {
 }
 
 bool buttonPressed(Button button);
-
+bool buttonDown(Button button);
 #endif // SST_UTILS_H

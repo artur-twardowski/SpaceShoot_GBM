@@ -5,6 +5,7 @@
 #include "GameOver.h"
 #include "MainMenu.h"
 #include "TitleScreen.h"
+#include "InstructionsContext.h"
 
 namespace spaceshoot {
 
@@ -25,15 +26,35 @@ namespace spaceshoot {
 
         spaceshoot::tileset::load(tileSet);
         ctx.difficultyLevel = 2;
+        ctx.flags = FLAG_SMOOTH_SCROLLING;
     }
 
     void main() {
         spaceshoot::titlescreen::run();
+//        spaceshoot::instructions::run(tileSet);
 
         bool showMenu = true;
         while (1) {
+            mainmenu::MenuPosition menuPosition;
             if (showMenu) {
-                spaceshoot::mainmenu::run(ctx);
+                menuPosition = spaceshoot::mainmenu::run(ctx);
+
+                switch (menuPosition) {
+                    case mainmenu::MenuPosition::Instructions:
+                        instructions::run(tileSet);
+                        continue;
+
+                    case mainmenu::MenuPosition::Story:
+                        continue;
+
+                    case mainmenu::MenuPosition::NewGame:
+                        break;
+
+                    case mainmenu::MenuPosition::ReturnToBootloader:
+                        gb.bootloader.loader();
+
+                    default: continue;
+                }
             }
 
             spaceshoot::game::restart(ctx);

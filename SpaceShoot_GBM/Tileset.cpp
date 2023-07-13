@@ -69,7 +69,7 @@ const AnimationSequence animSequences[] = {
 static_assert(sizeof(animSequences) / sizeof(animSequences[0]) == static_cast<size_t>(ElementID::Count));
 static_assert(static_cast<size_t>(ElementID::Count) <= BLOCK_MASK);
 
-void draw(Image& tileset, uint8_t x, uint8_t y, ElementID elementID) {
+void draw(Image& tileset, uint16_t x, uint16_t y, ElementID elementID) {
     gb.display.drawImage(x, y,
             tileset,
             static_cast<uint8_t>(elementID) * BLOCK_WIDTH + 2, 0,
