@@ -129,8 +129,7 @@ namespace spaceshoot { namespace game {
         }
     }
 
-    static bool checkCollisions(GameContext& ctx, uint8_t row) {
-        bool hit = false;
+    static void checkCollisions(GameContext& ctx, uint16_t& hits, uint8_t row) {
         for (size_t col = 0; col < NUM_COLS; col++) {
             bool missile = game::getMissile(ctx, row, col);
             auto blk = game::getBlock(ctx, row, col);
@@ -139,22 +138,21 @@ namespace spaceshoot { namespace game {
                 ctx.hits++;
                 ctx.blocksPresent--;
                 game::setBlockClearMissile(ctx, row, col, ElementID::Destroyed1);
-                hit = true;
+                hits++;
             }
         }
-        return hit;
     }
 
 
     static GameState updateGameField(GameContext& ctx, DrawScene drawScene) {
         const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
 
-        bool hit = false;
+        uint16_t hits = 0;
         bool miss = false;
 
         for (size_t row = 0; row < NUM_ROWS; row++) {
 
-            hit = checkCollisions(ctx, row);
+            checkCollisions(ctx, hits, row);
 
             for (size_t col = NUM_COLS-1; col < NUM_COLS; col--) {
                 auto blk = game::getBlock(ctx, row, col);
@@ -178,7 +176,7 @@ namespace spaceshoot { namespace game {
                 }
             }
             
-            hit |= checkCollisions(ctx, row);
+            checkCollisions(ctx, hits, row);
 
             game::setMissile(ctx, row, 0, false);
             /* Move the blocks left */
@@ -235,8 +233,8 @@ namespace spaceshoot { namespace game {
         } else if (ctx.runTime >= params.maxRunTime) {
             return GameState::GameOverTimeout;
         }
-        if (hit) {
-            gb.sound.tone(240, 60);
+        if (hits > 0) {
+            gb.sound.tone(100 + hits, 5 * hits);
         }
         if (miss) {
             gb.sound.tone(100, 60);
@@ -247,7 +245,7 @@ namespace spaceshoot { namespace game {
     }
 
     void shoot(GameContext& ctx) {
-        //gb.sound.tone(100, 50);
+        gb.sound.tone(100, 30);
         ctx.shoots++;
         setMissile(ctx, ctx.playerPosition, 0, true);
     }
@@ -261,7 +259,7 @@ namespace spaceshoot { namespace game {
 
     void continueSalvo(GameContext& ctx) {
         if (ctx.salvoCounter > 0) {
-            gb.sound.tone(ctx.salvoCounter * 250, 50);
+            gb.sound.tone(ctx.salvoCounter * 150, 50);
             for (size_t row = 0; row < NUM_ROWS; row++) {
                 setMissile(ctx, row, 0, true);
             }
