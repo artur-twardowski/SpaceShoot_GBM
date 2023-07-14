@@ -134,12 +134,17 @@ namespace spaceshoot { namespace game {
 
             hit = checkCollisions(ctx, row);
 
-            for (size_t col = NUM_COLS-1; col > 0; col--) {
-                bool missile = game::getMissile(ctx, row, col-1);
+            for (size_t col = NUM_COLS-1; col < NUM_COLS; col--) {
                 auto blk = game::getBlock(ctx, row, col);
 
-                game::setMissile(ctx, row, col, missile);
+                /* Move missiles to the left */
+                if (col > 0) {
+                    bool missile = game::getMissile(ctx, row, col-1);
 
+                    game::setMissile(ctx, row, col, missile);
+                }
+
+                /* Handle stoning of function blocks and update of animated tiles */
                 const AnimationSequence& animSeq = animSequences[static_cast<size_t>(blk)];
                 if (blk != ElementID::None) {
                     /* TODO: magic number */
