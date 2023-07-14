@@ -327,7 +327,7 @@ namespace spaceshoot { namespace game {
             //if (fps > TARGET_FPS * 100) {
             //  fps = TARGET_FPS * 100;
             //}
-            gb.display.printf(0, SCREEN_HEIGHT-7, "FPS: %2d.%02d, B: %3d, H/S: %4d/%4d",
+            gb.display.printf(0, SCREEN_HEIGHT-7, "MFPS: %2d.%d, B: %3d, H/S: %4d/%4d",
                     fps / 10, fps % 10, ctx.blocksPresent, ctx.hits, ctx.shoots);
         }
     }

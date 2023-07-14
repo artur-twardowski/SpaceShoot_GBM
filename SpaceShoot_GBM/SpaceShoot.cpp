@@ -7,7 +7,7 @@
 #include "TitleScreen.h"
 #include "InstructionsContext.h"
 
-const char VERSION[] = "v0.1-R713";
+const char VERSION[] = "v0.1-R714";
 
 namespace spaceshoot {
 
@@ -33,7 +33,6 @@ namespace spaceshoot {
 
     void main() {
         spaceshoot::titlescreen::run();
-//        spaceshoot::instructions::run(tileSet);
 
         bool showMenu = true;
         while (1) {
