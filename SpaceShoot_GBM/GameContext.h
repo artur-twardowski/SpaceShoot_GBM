@@ -46,7 +46,13 @@ namespace spaceshoot { namespace game {
     }
 
     static inline bool isFunctionBlock(tileset::ElementID elementID) {
-        return elementID >= tileset::ElementID::Bomb1 && elementID <= tileset::ElementID::Bomb4;
+        if (elementID >= tileset::ElementID::Bomb1 && elementID <= tileset::ElementID::Bomb4) {
+            return true;
+        }
+        if (elementID >= tileset::ElementID::Bonus1 && elementID <= tileset::ElementID::Bonus4) {
+            return true;
+        }
+        return false;
     }
 
     static inline void setBlock(GameContext& ctx, uint8_t row, uint8_t col, tileset::ElementID elementID) {

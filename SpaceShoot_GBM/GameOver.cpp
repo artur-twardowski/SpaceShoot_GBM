@@ -80,66 +80,69 @@ namespace spaceshoot { namespace gameover {
     }
 
     bool run(GameContext& ctx, bool timedOut) {
-      uint32_t accuracy;
-      uint32_t accuracyPoints;
-      uint32_t bonus;
-      uint32_t gameScore = ctx.score;
-      uint32_t showPhaseCounter = 0;
-      uint32_t showPhase = 0;
+        uint32_t accuracy;
+        uint32_t accuracyPoints;
+        uint32_t bonus;
+        uint32_t gameScore = ctx.score;
+        uint32_t showPhaseCounter = 0;
+        uint32_t showPhase = 0;
 
         gb.tft.colorCells.enabled = false;
         gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
 
-      if (ctx.shoots != 0) {
-        accuracy = ctx.hits * 1000 / ctx.shoots;
-        accuracyPoints = accuracy * 2;
-      }
-
-      bonus = ctx.numBombs * 100;
-      if (timedOut) {
-        bonus += 500;
-      }
-
-      ctx.score = 0;
-
-      while (1) {
-        gb.display.clear();
-
-        if (showPhaseCounter == 64) {
-          bool updated = decreaseByInterval(gameScore, 1000, ctx.score);
-          if (!updated) updated = decreaseByInterval(gameScore, 100, ctx.score);
-          if (!updated) updated = decreaseByInterval(gameScore, 10, ctx.score);
-          if (!updated) updated = decreaseByInterval(gameScore, 1, ctx.score);
-          if (!updated) updated = decreaseByInterval(accuracyPoints, 100, ctx.score);
-          if (!updated) updated = decreaseByInterval(accuracyPoints, 10, ctx.score);
-          if (!updated) updated = decreaseByInterval(accuracyPoints, 1, ctx.score);
-          if (!updated) updated = decreaseByInterval(bonus, 1000, ctx.score);
-          if (!updated) updated = decreaseByInterval(bonus, 100, ctx.score);
-          if (!updated) updated = decreaseByInterval(bonus, 10, ctx.score);
-          if (!updated) updated = decreaseByInterval(bonus, 1, ctx.score);
-
-          if (!updated) showPhaseCounter++;
-
-          if (updated) {
-            gb.sound.tone(250, 40);
-          }      
+        if (ctx.shoots > 0) {
+            accuracy = ctx.hits * 1000 / ctx.shoots;
+            accuracyPoints = accuracy * 2;
         } else {
-          showPhaseCounter++;
+            accuracy = 0;
+            accuracyPoints = 0;
         }
 
-        drawStats(gameScore, accuracy, accuracyPoints, bonus, ctx.score, showPhaseCounter, ctx);
-        
-        processEvents();
+        bonus = ctx.numBombs * 100;
+        if (timedOut) {
+            bonus += 500;
+        }
 
-        if (showPhaseCounter >= 100) {
-            if (gb.buttons.pressed(BUTTON_A)) {
-                return false; /* Do not invoke the menu, jump right away to the game */
+        ctx.score = 0;
+
+        while (1) {
+            gb.display.clear();
+
+            if (showPhaseCounter == 64) {
+                bool updated = decreaseByInterval(gameScore, 1000, ctx.score);
+                if (!updated) updated = decreaseByInterval(gameScore, 100, ctx.score);
+                if (!updated) updated = decreaseByInterval(gameScore, 10, ctx.score);
+                if (!updated) updated = decreaseByInterval(gameScore, 1, ctx.score);
+                if (!updated) updated = decreaseByInterval(accuracyPoints, 100, ctx.score);
+                if (!updated) updated = decreaseByInterval(accuracyPoints, 10, ctx.score);
+                if (!updated) updated = decreaseByInterval(accuracyPoints, 1, ctx.score);
+                if (!updated) updated = decreaseByInterval(bonus, 1000, ctx.score);
+                if (!updated) updated = decreaseByInterval(bonus, 100, ctx.score);
+                if (!updated) updated = decreaseByInterval(bonus, 10, ctx.score);
+                if (!updated) updated = decreaseByInterval(bonus, 1, ctx.score);
+
+                if (!updated) showPhaseCounter++;
+
+                if (updated) {
+                    gb.sound.tone(250, 40);
+                }      
+            } else {
+                showPhaseCounter++;
             }
-            if (gb.buttons.pressed(BUTTON_B)) {
-                return true; /* Go back to menu */
+
+            drawStats(gameScore, accuracy, accuracyPoints, bonus, ctx.score, showPhaseCounter, ctx);
+
+            processEvents();
+
+            if (showPhaseCounter >= 100) {
+                if (gb.buttons.pressed(BUTTON_A)) {
+                    return false; /* Do not invoke the menu, jump right away to the game */
+                }
+                if (gb.buttons.pressed(BUTTON_B)) {
+                    return true; /* Go back to menu */
+                }
             }
         }
-      }
 
     }
 }}

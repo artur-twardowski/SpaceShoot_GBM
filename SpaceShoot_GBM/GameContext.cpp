@@ -107,96 +107,115 @@ namespace spaceshoot { namespace game {
         }
     }
 
+    static bool checkCollisions(GameContext& ctx, uint8_t row) {
+        bool hit = false;
+        for (size_t col = 0; col < NUM_COLS; col++) {
+            bool missile = game::getMissile(ctx, row, col);
+            auto blk = game::getBlock(ctx, row, col);
 
-    static GameState updateGameField(GameContext& ctx, uint8_t prescale) {
-      const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
-
-      bool hit = false;
-      bool miss = false;
-      
-      for (size_t row = 0; row < NUM_ROWS; row++) {
-        for (size_t col = NUM_COLS-1; col > 0; col--) {
-          bool missile = game::getMissile(ctx, row, col-1);
-          game::setMissile(ctx, row, col, missile);
-
-          auto blk = game::getBlock(ctx, row, col);
-          const AnimationSequence& animSeq = animSequences[static_cast<size_t>(blk)];
-          if (blk != ElementID::None) {
-              /* TODO: magic number */
-            if (game::isFunctionBlock(blk) && col == 19) {
-                miss = miss || handleMiss(ctx, blk, row, col);
-            } else if (animSeq.speed && (gb.frameCount % animSeq.speed == 0)) {
-                game::setBlock(ctx, row, col, animSeq.next);
+            if (missile && handleHit(ctx, blk)) {
+                ctx.hits++;
+                ctx.blocksPresent--;
+                game::setBlockClearMissile(ctx, row, col, ElementID::Destroyed1);
+                hit = true;
             }
-          }
+        }
+        return hit;
+    }
 
-          if (missile && (blk != ElementID::None)) {
-            if (handleHit(ctx, game::getBlock(ctx, row, col))) {
-              ctx.hits++;
-              ctx.blocksPresent--;
-              game::setBlockClearMissile(ctx, row, col, ElementID::Destroyed1);
-              hit = true;
+
+    static GameState updateGameField(GameContext& ctx, DrawScene drawScene) {
+        const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
+
+        bool hit = false;
+        bool miss = false;
+
+        for (size_t row = 0; row < NUM_ROWS; row++) {
+
+            hit = checkCollisions(ctx, row);
+
+            for (size_t col = NUM_COLS-1; col > 0; col--) {
+                bool missile = game::getMissile(ctx, row, col-1);
+                auto blk = game::getBlock(ctx, row, col);
+
+                game::setMissile(ctx, row, col, missile);
+
+                const AnimationSequence& animSeq = animSequences[static_cast<size_t>(blk)];
+                if (blk != ElementID::None) {
+                    /* TODO: magic number */
+                    if (game::isFunctionBlock(blk) && col == 19) {
+                        miss = miss || handleMiss(ctx, blk, row, col);
+                    } else if (animSeq.speed && (gb.frameCount % animSeq.speed == 0)) {
+                        game::setBlock(ctx, row, col, animSeq.next);
+                    }
+                }
             }
-          }
+            
+            hit |= checkCollisions(ctx, row);
+
+            game::setMissile(ctx, row, 0, false);
+            /* Move the blocks left */
+            if ((ctx.runTime & 0x07) == 0 && drawScene == DrawScene::Gameplay) {
+                auto blk = game::getBlock(ctx, row, 0);
+                if (blk != ElementID::None && !(blk >= ElementID::Destroyed1 && blk <= ElementID::Destroyed5)) {
+                    return GameState::GameOverLost;
+                }
+                for (size_t col = 0; col < NUM_COLS-1; col++) {
+                    game::setBlock(ctx, row, col,
+                            game::getBlock(ctx, row, col + 1));
+                }
+                size_t col = NUM_COLS - 1;
+                int randval = rand();
+
+                if (ctx.runTime <= params.maxRunTime - 8 * NUM_COLS) {
+
+                    int density = ctx.runTime >> params.densityIncreaseFactor;
+                    if (density >= 18) {
+                        density = 18;
+                    }
+
+                    game::setBlock(ctx, row, col, ElementID::None);
+                    bool blockPlaced = false;
+                    if (randval % 24 <= density) {
+                        uint8_t b = (uint8_t)ElementID::Debris1 + ((randval + row) & 0x07);
+                        game::setBlock(ctx, row, col, static_cast<ElementID>(b));
+                        blockPlaced = true;
+                    }
+                    if ((randval & 0x0FFF) <=params.bombProbability) {
+                        game::setBlock(ctx, row, col, ElementID::Bomb1);
+                        blockPlaced = true;
+                    }
+                    if ((randval & 0x0FFF) <= params.bonusProbability) {
+                        game::setBlock(ctx, row, col, ElementID::Bonus1);
+                        blockPlaced = true;
+                    } 
+
+                    if (blockPlaced) ctx.blocksPresent++;
+                } else {
+                    game::setBlock(ctx, row, col, ElementID::None);
+                }
+            }
+
+
         }
-        game::setMissile(ctx, row, 0, false);
 
-        
-        /* Move the blocks left */
-        if (prescale == 0) {
-          if (game::getBlock(ctx, row, 0) != ElementID::None) {
-            return GameState::GameOverLost;
-          }
-          for (size_t col = 0; col < NUM_COLS-1; col++) {
-            game::setBlock(ctx, row, col,
-                game::getBlock(ctx, row, col + 1));
-          }
-          size_t col = NUM_COLS - 1;
-          int randval = rand();
-
-          if (ctx.runTime <= params.maxRunTime - 8 * NUM_COLS) {
-              
-              int density = ctx.runTime >> params.densityIncreaseFactor;
-              if (density >= 18) {
-                density = 18;
-              }
-              
-              game::setBlock(ctx, row, col, ElementID::None);
-              bool blockPlaced = false;
-              if (randval % 24 <= density) {
-                  uint8_t b = (uint8_t)ElementID::Debris1 + ((randval + row) & 0x07);
-                  game::setBlock(ctx, row, col, static_cast<ElementID>(b));
-                  blockPlaced = true;
-              }
-              if ((randval & 0x0FFF) <=params.bombProbability) {
-                  game::setBlock(ctx, row, col, ElementID::Bomb1);
-                  blockPlaced = true;
-              }
-              if ((randval & 0x0FFF) <= params.bonusProbability) {
-                  game::setBlock(ctx, row, col, ElementID::Bonus1);
-                  blockPlaced = true;
-              } 
-
-              if (blockPlaced) ctx.blocksPresent++;
-          } else {
-            game::setBlock(ctx, row, col, ElementID::None);
-          }
+        if (drawScene == DrawScene::Gameplay) {
+            ctx.runTime++;
         }
-      }
-      ctx.runTime++;
-      if (ctx.runTime > params.maxRunTime - 8 * NUM_COLS && ctx.blocksPresent == 0) {
-          return GameState::GameOverTimeout;
-      } else if (ctx.runTime >= params.maxRunTime) {
-          return GameState::GameOverTimeout;
-      }
-      if (hit) {
-        gb.sound.tone(240, 60);
-      }
-      if (miss) {
-        gb.sound.tone(100, 60);
-      }
-      
-      return GameState::Continue;
+
+        if (ctx.runTime > params.maxRunTime - 8 * NUM_COLS && ctx.blocksPresent == 0) {
+            return GameState::GameOverTimeout;
+        } else if (ctx.runTime >= params.maxRunTime) {
+            return GameState::GameOverTimeout;
+        }
+        if (hit) {
+            gb.sound.tone(240, 60);
+        }
+        if (miss) {
+            gb.sound.tone(100, 60);
+        }
+
+        return GameState::Continue;
 
     }
 
@@ -381,7 +400,7 @@ namespace spaceshoot { namespace game {
       while (1) {
         processEvents();
 
-        switch (updateGameField(ctx, ctx.runTime & 0x07)) {
+        switch (updateGameField(ctx, drawScene)) {
             case GameState::Continue:
                 break;
 
@@ -411,7 +430,7 @@ namespace spaceshoot { namespace game {
                     gb.sound.tone(622, 800);
                     playerTiles[PLAYER_TILE_TAIL] = tileset::ElementID::ShipTailExploding;
                     playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFrontExploding;
-                } else if (drawSceneCounter == 8) {
+                } else if (drawSceneCounter == 16) {
                     return GameState::GameOverLost;
                 }
             } else if (drawScene == DrawScene::Winning) {
