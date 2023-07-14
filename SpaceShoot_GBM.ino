@@ -1,5 +1,5 @@
-  #include "SpaceShoot.h"
-#include "Configuration.h"
+#include "src/SpaceShoot.h"
+#include "src/Configuration.h"
 
 void setup() {
   spaceshoot::init();
