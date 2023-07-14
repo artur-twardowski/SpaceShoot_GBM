@@ -44,7 +44,7 @@ namespace spaceshoot { namespace mainmenu {
     const char STR_YES[] = "< YES  ";
     const char STR_NO[] = "  NO >";
     
-    const char STR_SHOW_PROFILING_INFO[] = "SHOW DATA FOR NERDS";
+    const char STR_SHOW_PROFILING_INFO[] = "SHOW PROFILING STATS";
 
     enum struct VisibleScreen {
         Main = 0,

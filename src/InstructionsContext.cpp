@@ -43,8 +43,9 @@ namespace spaceshoot { namespace instructions {
     static const char STR_BLOCKS6[] = "extra points.";
     static const char STR_SCORING2[] = "125 points, to be precise.";
 
-    static const char STR_HINT1[] = "Bombs and bonus blocks expire when they";
-    static const char STR_HINT2[] = "approach too close. Hit them quickly!";
+    static const char STR_HINT1A[] = "Bombs and bonus blocks turn into stone";
+    static const char STR_HINT1B[] = "when they approach too close.";
+    static const char STR_HINT1C[] = "Better hit them as soon as you can.";
 
     static const char STR_HINT3[] = "Don't waste the salvos when the debris";
     static const char STR_HINT4[] = "are far away. Fire them when it gets";
@@ -148,24 +149,25 @@ namespace spaceshoot { namespace instructions {
             gb.display.print(28, 108 - sy, STR_SCORING2);
 
             gb.display.setColor(COLOR_HINTS);
-            gb.display.print(0, 122 - sy, STR_HINT1);
-            gb.display.print(0, 128 - sy, STR_HINT2);
+            gb.display.print(0, 122 - sy, STR_HINT1A);
+            gb.display.print(0, 128 - sy, STR_HINT1B);
+            gb.display.print(0, 134 - sy, STR_HINT1C);
 
-            gb.display.print(0, 138 - sy, STR_HINT3);
-            gb.display.print(0, 144 - sy, STR_HINT4);
-            gb.display.print(0, 150 - sy, STR_HINT5);
+            gb.display.print(0, 144 - sy, STR_HINT3);
+            gb.display.print(0, 150 - sy, STR_HINT4);
+            gb.display.print(0, 156 - sy, STR_HINT5);
 
-            gb.display.print(0, 160 - sy, STR_HINT6);
-            gb.display.print(0, 166 - sy, STR_HINT7);
-            gb.display.print(0, 172 - sy, STR_HINT8);
-            gb.display.print(0, 178 - sy, STR_HINT9);
-            gb.display.print(0, 184 - sy, STR_HINT10);
+            gb.display.print(0, 166 - sy, STR_HINT6);
+            gb.display.print(0, 172 - sy, STR_HINT7);
+            gb.display.print(0, 178 - sy, STR_HINT8);
+            gb.display.print(0, 184 - sy, STR_HINT9);
+            gb.display.print(0, 190 - sy, STR_HINT10);
 
             gb.display.setColor(COLOR_SCORING);
-            gb.display.print(0, 194 - sy, STR_SCORING3);
-            gb.display.print(0, 200 - sy, STR_SCORING4);
-            gb.display.print(0, 206 - sy, STR_SCORING5);
-            gb.display.print(0, 212 - sy, STR_SCORING6);
+            gb.display.print(0, 200 - sy, STR_SCORING3);
+            gb.display.print(0, 206 - sy, STR_SCORING4);
+            gb.display.print(0, 212 - sy, STR_SCORING5);
+            gb.display.print(0, 218 - sy, STR_SCORING6);
 
             tileset::updateAnimation(elements, sizeof(elements) / sizeof(elements[0]));
 
