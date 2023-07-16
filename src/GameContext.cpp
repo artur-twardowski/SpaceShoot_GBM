@@ -276,10 +276,10 @@ namespace spaceshoot { namespace game {
         for (size_t ix = 0; ix < 8; ix++) {
             memcpy(barsPalettes[ix], Gamebuino_Meta::defaultColorPalette, sizeof(barsPalettes[ix]));
             
-            barsPalettes[ix][(int)COLOR_BAR_BACKGROUND] = (Color) Gamebuino_Meta::rgb888Torgb565({0, 0, (7 - ix) * 24});
-            barsPalettes[ix][(int)COLOR_SCORE] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (7 - ix) * 32, 255});
-            barsPalettes[ix][(int)COLOR_BOMBS] = (Color) Gamebuino_Meta::rgb888Torgb565({255, (7 - ix), 0});
-            barsPalettes[ix][(int)COLOR_TIME] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (7 - ix/2) * 64, 0});
+            barsPalettes[ix][(int)COLOR_BAR_BACKGROUND] = (Color) Gamebuino_Meta::rgb888Torgb565({0, 0, (8 - ix) * 24});
+            barsPalettes[ix][(int)COLOR_SCORE] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (8 - ix) * 31, 255});
+            barsPalettes[ix][(int)COLOR_BOMBS] = (Color) Gamebuino_Meta::rgb888Torgb565({255, (8 - ix) * 31, 0});
+            barsPalettes[ix][(int)COLOR_TIME] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (4 - ix/2) * 63, 160});
 
             gb.tft.colorCells.palettes[paletteIndex] = barsPalettes[ix];
             gb.tft.colorCells.paletteToLine[ix] = paletteIndex;
@@ -336,14 +336,14 @@ namespace spaceshoot { namespace game {
         gb.display.fillRect(0,SCREEN_HEIGHT-8,SCREEN_WIDTH, 8);
 
         gb.display.setColor(COLOR_SCORE);
-        gb.display.printf(0, 1, "%5d", ctx.score);
+        gb.display.printf(10, 1, "%5d", ctx.score);
 
         gb.display.setColor(COLOR_BOMBS);
-        gb.display.printf(40, 1, "%2d", ctx.numBombs);
+        gb.display.printf(64 - 4, 1, "%2d", ctx.numBombs);
 
         unsigned int remainingTime = (params.maxRunTime - ctx.runTime) / TARGET_FPS;
         gb.display.setColor(COLOR_TIME);
-        gb.display.printf(60, 1, "%d:%02d", remainingTime / 60, remainingTime % 60);
+        gb.display.printf(128 - 4 * 4, 1, "%d:%02d", remainingTime / 60, remainingTime % 60);
 
         if (ctx.flags & FLAG_SHOW_PROFILING_INFO) {
             /* Profiling information for nerds */
