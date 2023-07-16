@@ -29,7 +29,7 @@
 #include "TitleScreen.h"
 #include "InstructionsContext.h"
 
-const char VERSION[] = "v0.1-R714";
+const char VERSION[] = "v0.1-R716";
 
 namespace spaceshoot {
 
