@@ -23,14 +23,16 @@
 #include "InstructionsContext.h"
 #include "Tileset.h"
 #include "Utils.h"
+#include "font4x7.c"
+#include "utility/Graphics/font3x5.c"
 
 namespace spaceshoot { namespace instructions {
 
-    static const char STR_HEADER[] = "*** INSTRUCTIONS ***";
+    static const char STR_HEADER[] = "INSTRUCTIONS";
 
     static const char STR_SHIP[] = "Your space ship.";
-    static const char STR_CONTROLS1[] = "Use the D-Pad to move up";
-    static const char STR_CONTROLS2[] = "and down. Press [A] button";
+    static const char STR_CONTROLS1[] = "Use the D-Pad";
+    static const char STR_CONTROLS2[] = "to move up and down.";
     static const char STR_CONTROLS3[] = "to fire a missile.";
     static const char STR_BLOCKS1[] = "Debris to destroy. Don't";
     static const char STR_BLOCKS2[] = "let them reach the station.";
@@ -99,20 +101,22 @@ namespace spaceshoot { namespace instructions {
             gb.display.clear();
             
             gb.display.setColor(2);
-            gb.display.print(0, -4 - sy, STR_HEADER);
+            setTextFormat((ColorIndex)14, 2, 1, font4x7);
+            gb.display.print(0, 0 - sy, STR_HEADER);
 
             size_t ix = 0;
-            tileset::draw(tileSet, 4, 12 - sy, elements[ix++]);
-            tileset::draw(tileSet, 8, 12 - sy, elements[ix++]);
-            tileset::draw(tileSet, 8,  7 - sy, elements[ix++]);
-            tileset::draw(tileSet, 8, 17 - sy, elements[ix++]);
+            tileset::draw(tileSet, 4, 20 - sy, elements[ix++]);
+            tileset::draw(tileSet, 8, 20 - sy, elements[ix++]);
+            tileset::draw(tileSet, 8, 25 - sy, elements[ix++]);
+            tileset::draw(tileSet, 8, 30 - sy, elements[ix++]);
 
+            setTextFormat((ColorIndex)14, 1, 1, font4x7);
             gb.display.setColor(COLOR_DESCRIPTION);
-            gb.display.print(28, 6 - sy, STR_SHIP);
+            gb.display.print(28, 16 - sy, STR_SHIP);
             gb.display.setColor(COLOR_CONTROLS);
-            gb.display.print(28, 12 - sy, STR_CONTROLS1);
-            gb.display.print(28, 18 - sy, STR_CONTROLS2);
-            gb.display.print(28, 24 - sy, STR_CONTROLS3);
+            gb.display.print(28, 28 - sy, STR_CONTROLS1);
+            gb.display.print(28, 36 - sy, STR_CONTROLS2);
+            gb.display.print(28, 44 - sy, STR_CONTROLS3);
 
             tileset::draw(tileSet, 4, 40 - sy, elements[ix++]);
             tileset::draw(tileSet, 10, 40 - sy, elements[ix++]);
@@ -199,10 +203,10 @@ namespace spaceshoot { namespace instructions {
                 return;
             }
             if (buttonDown(BUTTON_DOWN)) {
-                sy+=2;
+                sy+=5;
             }
             if (buttonDown(BUTTON_UP)) {
-                sy-=2;
+                sy-=5;
             }
             f++;
             if (enteringAnimation) {

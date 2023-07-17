@@ -31,4 +31,13 @@ static inline void processEvents() {
 
 bool buttonPressed(Button button);
 bool buttonDown(Button button);
+
+static inline void setTextFormat(ColorIndex color, uint8_t w, uint8_t h, const uint8_t* font) {
+    gb.display.setColor(color);
+    gb.display.setFont(font);
+    gb.display.setFontSize(w, h);
+}
+
+void paletteFadeFromBlack(uint16_t* dest, const uint16_t* src, unsigned int val, unsigned int max);
+
 #endif // SST_UTILS_H

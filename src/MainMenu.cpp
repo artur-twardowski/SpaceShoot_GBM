@@ -21,30 +21,33 @@
 //     SOFTWARE.
 
 #include "MainMenu.h"
+#include "Configuration.h"
 #include "GameContext.h"
+#include "TitleScreen.h"
 #include "Utils.h"
+#include "font4x7.c"
 
 namespace spaceshoot { namespace mainmenu {
 
-    const char STR_NEW_GAME[] = "NEW GAME";
-    const char STR_STORY[] = "STORY";
-    const char STR_INSTRUCTIONS[] = "INSTRUCTIONS";
-    const char STR_SETTINGS[] = "SETTINGS";
-    const char STR_RETURN_TO_BOOTLOADER[] = "RETURN TO LOADER";
+    const char STR_NEW_GAME[] = "New game";
+    const char STR_STORY[] = "Story";
+    const char STR_INSTRUCTIONS[] = "Instructions";
+    const char STR_SETTINGS[] = "Settings";
+    const char STR_RETURN_TO_BOOTLOADER[] = "Return to loader";
 
-    const char STR_GAME_DIFFICULTY[] = "DIFFICULTY";
-    const char STR_GAME_DIFFICULTY_L1[] = "  VERY EASY >";
-    const char STR_GAME_DIFFICULTY_L2[] = "< EASY >";
-    const char STR_GAME_DIFFICULTY_L3[] = "< NORMAL >";
-    const char STR_GAME_DIFFICULTY_L4[] = "< HARD >";
-    const char STR_GAME_DIFFICULTY_L5[] = "< VERY HARD >";
-    const char STR_GAME_DIFFICULTY_L6[] = "< YOU SHALL NOT PASS  ";
+    const char STR_GAME_DIFFICULTY[] = "Difficulty";
+    const char STR_GAME_DIFFICULTY_L1[] = "  Very easy \x10";
+    const char STR_GAME_DIFFICULTY_L2[] = "\x11 Easy \x10";
+    const char STR_GAME_DIFFICULTY_L3[] = "\x11 Normal \x10";
+    const char STR_GAME_DIFFICULTY_L4[] = "\x11 Hard \x10";
+    const char STR_GAME_DIFFICULTY_L5[] = "\x11 Very hard \x10";
+    const char STR_GAME_DIFFICULTY_L6[] = "\x11 You shall not pass  ";
 
-    const char STR_SMOOTH_SCROLLING[] = "SMOOTH SCROLLING";
-    const char STR_YES[] = "< YES  ";
-    const char STR_NO[] = "  NO >";
+    const char STR_SMOOTH_SCROLLING[] = "Smooth scrolling";
+    const char STR_YES[] = "\x11 Enabled  ";
+    const char STR_NO[] = "  Disabled \x10";
     
-    const char STR_SHOW_PROFILING_INFO[] = "SHOW PROFILING STATS";
+    const char STR_SHOW_PROFILING_INFO[] = "Profiling statistics";
 
     enum struct VisibleScreen {
         Main = 0,
@@ -52,13 +55,19 @@ namespace spaceshoot { namespace mainmenu {
     };
 
     static void drawMenuPosition(uint8_t x, uint8_t y, const char* str, bool selected) {
-        gb.display.setColor(selected ? INDEX_WHITE : INDEX_ORANGE);
+        for (size_t py = y - 2; py < y + 9; py++) {
+            gb.tft.colorCells.paletteToLine[py] = 1;
+        }
 
+        gb.display.setColor(selected ? INDEX_BEIGE : INDEX_BLUE);
+        gb.display.fillRect(0, y-2, SCREEN_WIDTH, 11);
+        
+        gb.display.setColor(selected ? INDEX_BLACK : INDEX_WHITE);
         gb.display.print(x, y, str);
     }
 
     static void drawMenuPositionHCentered(uint8_t y, const char* str, bool selected) {
-        drawMenuPosition(SCREEN_WIDTH / 2 - 4 / 2 * strlen(str), y, str, selected);
+        drawMenuPosition(SCREEN_WIDTH / 2 - 5 * strlen(str) / 2, y, str, selected);
     }
 
     static void drawMenuPositionParam(uint8_t x, uint8_t y, const char* str, bool selected) {
@@ -74,15 +83,24 @@ namespace spaceshoot { namespace mainmenu {
     MenuPosition run(GameContext& ctx) {
         int position = 0;
         size_t dx;
+        uint16_t palBg[16];
+        paletteFadeFromBlack(palBg, titlescreen::gameLogoPalette, 5, 10);
         VisibleScreen screen = VisibleScreen::Main;
-        gb.tft.colorCells.enabled = false;
-        gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
+        gb.tft.colorCells.enabled = true;
+
+        gb.tft.colorCells.palettes[0] = (Color*)palBg;
+        gb.tft.colorCells.palettes[1] = (Color*)Gamebuino_Meta::defaultColorPalette;
+
+        memset(gb.tft.colorCells.paletteToLine, 0, SCREEN_HEIGHT);
+
+        Image backgroundImage(titlescreen::gameLogoData);
 
         while (1) {
             processEvents();
             
             gb.display.clear();
-
+            gb.display.drawImage(0, 0, backgroundImage);
+            gb.display.setFont(font4x7);
 
             if (buttonPressed(BUTTON_UP)) {
                 if (position > 0)
@@ -133,20 +151,20 @@ namespace spaceshoot { namespace mainmenu {
             }
 
             if (screen == VisibleScreen::Main) {
-                uint8_t y = 0;
-                drawMenuPositionHCentered((y+=20), STR_NEW_GAME, static_cast<MenuPosition>(position) == MenuPosition::NewGame);
+                uint8_t y = 40;
+                drawMenuPositionHCentered((y+=10), STR_NEW_GAME, static_cast<MenuPosition>(position) == MenuPosition::NewGame);
 #ifdef STORY_IMPLEMENTED
-                drawMenuPositionHCentered((y+=20), STR_STORY, static_cast<MenuPosition>(position) == MenuPosition::Story);
+                drawMenuPositionHCentered((y+=10), STR_STORY, static_cast<MenuPosition>(position) == MenuPosition::Story);
 #endif
-                drawMenuPositionHCentered((y+=20), STR_INSTRUCTIONS, static_cast<MenuPosition>(position) == MenuPosition::Instructions);
-                drawMenuPositionHCentered((y+=20), STR_SETTINGS, static_cast<MenuPosition>(position) == MenuPosition::Settings);
-                drawMenuPositionHCentered((y+=20), STR_RETURN_TO_BOOTLOADER, static_cast<MenuPosition>(position) == MenuPosition::ReturnToBootloader);
+                drawMenuPositionHCentered((y+=10), STR_INSTRUCTIONS, static_cast<MenuPosition>(position) == MenuPosition::Instructions);
+                drawMenuPositionHCentered((y+=10), STR_SETTINGS, static_cast<MenuPosition>(position) == MenuPosition::Settings);
+                drawMenuPositionHCentered((y+=10), STR_RETURN_TO_BOOTLOADER, static_cast<MenuPosition>(position) == MenuPosition::ReturnToBootloader);
             }
 
             if (screen == VisibleScreen::Settings) {
-                drawMenuPosition(0, 30, STR_GAME_DIFFICULTY, position == 0);
+                drawMenuPosition(0, 20, STR_GAME_DIFFICULTY, position == 0);
                 drawMenuPosition(0, 50, STR_SMOOTH_SCROLLING, position == 1);
-                drawMenuPosition(0, 70, STR_SHOW_PROFILING_INFO, position == 2);
+                drawMenuPosition(0, 80, STR_SHOW_PROFILING_INFO, position == 2);
 
                 const char* s;
                 switch (ctx.difficultyLevel) {
@@ -158,8 +176,8 @@ namespace spaceshoot { namespace mainmenu {
                     case 5: s = STR_GAME_DIFFICULTY_L6; break;
                 }
 
-                dx = SCREEN_WIDTH - 4 * strlen(s);
-                drawMenuPositionParam(dx, 30, s, position == 0);
+                dx = SCREEN_WIDTH - 5 * strlen(s);
+                drawMenuPositionParam(dx, 32, s, position == 0);
 
                 if (ctx.flags & FLAG_SMOOTH_SCROLLING) {
                     s = STR_YES;
@@ -167,8 +185,8 @@ namespace spaceshoot { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                dx = SCREEN_WIDTH - 4 * strlen(s);
-                drawMenuPositionParam(dx, 50, s, position == 1);
+                dx = SCREEN_WIDTH - 5 * strlen(s);
+                drawMenuPositionParam(dx, 62, s, position == 1);
 
                 if (ctx.flags & FLAG_SHOW_PROFILING_INFO) {
                     s = STR_YES;
@@ -176,8 +194,8 @@ namespace spaceshoot { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                dx = SCREEN_WIDTH - 4 * strlen(s);
-                drawMenuPositionParam(dx, 70, s, position == 2);
+                dx = SCREEN_WIDTH - 5 * strlen(s);
+                drawMenuPositionParam(dx, 92, s, position == 2);
             }
 
         }

@@ -29,14 +29,14 @@
 #include "TitleScreen.h"
 #include "InstructionsContext.h"
 
-const char VERSION[] = "v0.1-R716";
+const char VERSION[] = "v0.2-R717";
 
 namespace spaceshoot {
 
     Image tileSet;
     GameContext ctx;
 
-    uint8_t paletteToCell[20 * 16];
+    uint8_t paletteToCell[SCREEN_HEIGHT];
 
     Color* palettes[32] = {
         const_cast<Color*>(Gamebuino_Meta::defaultColorPalette)

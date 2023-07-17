@@ -23,6 +23,8 @@
 #include "GameOver.h"
 #include "Utils.h"
 #include "GameContext.h"
+#include "utility/Graphics/font3x5.c"
+#include "font4x7.c"
 
 namespace spaceshoot { namespace gameover {
 
@@ -35,69 +37,77 @@ namespace spaceshoot { namespace gameover {
         return false;
     }
 
-
     static void drawStats(uint32_t score, uint16_t accuracy, uint32_t accuracyPoints, uint32_t bonus, uint32_t totalScore, uint16_t showPhase, GameContext& ctx) {
-      const unsigned int DISPLAY_X = SCREEN_WIDTH - 4 * 5 - 8;
+      const unsigned int DISPLAY_X = SCREEN_WIDTH - 2 * 4 * 5 - 8;
       const unsigned int DISPLAY_X1 = DISPLAY_X - 6 * 5 - 8;
 
-      uint32_t totalScoreY = 72;
+      uint32_t totalScoreY = 100;
         if (showPhase > 64) {
             if (showPhase < 104) {
-                totalScoreY -= (showPhase - 64);
+                totalScoreY -= (showPhase - 64) * 2;
             } else {
-                totalScoreY -= (104 - 64);
+                totalScoreY -= (104 - 64) * 2;
             }
         }
       
       gb.display.setColor(INDEX_LIGHTGREEN);
       if (showPhase >= 0 && showPhase < 80) {
-          gb.display.setColor(INDEX_GRAY);
+          setTextFormat(INDEX_GRAY, 1, 1, font4x7);
           gb.display.printf(4, 44, "SCORE");
-          gb.display.setColor(INDEX_LIGHTGREEN);
+
+          setTextFormat(INDEX_LIGHTGREEN, 2, 2, font3x5);
           gb.display.printf(DISPLAY_X, 44, "%5d", score);
       }
       if (showPhase >= 16 && showPhase < 80) {
-          gb.display.setColor(INDEX_GRAY);
-          gb.display.printf(4, 52, "ACCURACY");
-          gb.display.setColor(INDEX_RED);
-          gb.display.printf(DISPLAY_X1, 52, "%3d.%1d%%", accuracy / 10, accuracy % 10);
-          gb.display.setColor(INDEX_LIGHTGREEN);
-          gb.display.printf(DISPLAY_X, 52, "%5d", accuracyPoints);
+          setTextFormat(INDEX_GRAY, 1, 1, font4x7);
+          gb.display.printf(4, 56, "ACCURACY");
+
+          setTextFormat(INDEX_RED, 1, 2, font3x5);
+          gb.display.printf(DISPLAY_X1, 56, "%3d.%1d%%", accuracy / 10, accuracy % 10);
+
+          setTextFormat(INDEX_LIGHTGREEN, 2, 2, font3x5);
+          gb.display.printf(DISPLAY_X, 56, "%5d", accuracyPoints);
       }
       if (showPhase >= 32 && showPhase < 80) {
-          gb.display.setColor(INDEX_GRAY);
-          gb.display.printf(4, 60, "BONUS");
-          gb.display.setColor(INDEX_LIGHTGREEN);
-          gb.display.printf(DISPLAY_X, 60, "%5d", bonus);
+          setTextFormat(INDEX_GRAY, 1, 1, font4x7);
+          gb.display.printf(4, 68, "BONUS");
+
+          setTextFormat(INDEX_LIGHTGREEN, 2, 2, font3x5);
+          gb.display.printf(DISPLAY_X, 68, "%5d", bonus);
       }
       if (showPhase >= 48) {
-        gb.display.setColor(INDEX_BEIGE);
+        setTextFormat(INDEX_BEIGE, 1, 1, font4x7);
         gb.display.printf(4, totalScoreY, "FINAL SCORE");
-        gb.display.setColor(INDEX_YELLOW);
 
+        setTextFormat(INDEX_YELLOW, 2, 2, font3x5);
         gb.display.printf(DISPLAY_X, totalScoreY, "%5d", totalScore);
       }
 
+      gb.display.setFontSize(1, 1);
       if (showPhase >= 100) {
           gb.display.setColor(INDEX_GREEN);
           gb.display.printf(80, 48, "HIT");
           gb.display.setColor(INDEX_RED);
-          gb.display.printf(96, 48, "MISS");
+          gb.display.printf(116, 48, "MISS");
 
           gb.display.setColor(INDEX_GRAY);
           gb.display.printf(4, 56, "BOMB BLOCKS");
           gb.display.printf(4, 64, "BONUS BLOCKS");
 
           gb.display.setColor(INDEX_LIGHTGREEN);
+          gb.display.setFontSize(2, 1);
           gb.display.printf(76, 56,  "%4d", ctx.bombsCollected);
           gb.display.printf(76, 64, "%4d", ctx.bonusBlocksCollected);
           gb.display.setColor(INDEX_ORANGE);
-          gb.display.printf(96, 56,  "%4d", ctx.bombsMissed);
-          gb.display.printf(96, 64, "%4d", ctx.bonusBlocksMissed);
+          gb.display.setFontSize(2, 1);
+          gb.display.printf(116, 56,  "%4d", ctx.bombsMissed);
+          gb.display.printf(116, 64, "%4d", ctx.bonusBlocksMissed);
 
           gb.display.setColor(INDEX_WHITE);
-          gb.display.print(8, 112, "Press [A] to play again");
-          gb.display.print(8, 120, "Press [B] to return to main menu");
+          gb.display.setFontSize(1, 1);
+          gb.display.setFont(font4x7);
+          gb.display.print(8, 112, "\x15\x16 to play again");
+          gb.display.print(8, 120, "\x0F\x17 to return to main menu");
       }
     }
 

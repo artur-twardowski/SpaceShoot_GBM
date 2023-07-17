@@ -23,7 +23,12 @@
 #ifndef SST_TITLESCREEN_H
 #define SST_TITLESCREEN_H
 
+#include <stdint.h>
+
 namespace spaceshoot { namespace titlescreen {
+    extern const uint16_t gameLogoPalette[];
+    extern const uint8_t gameLogoData[];
+
     void run();
 }}
 

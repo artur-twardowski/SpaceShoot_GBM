@@ -21,6 +21,8 @@
 //     SOFTWARE.
 
 #include "Utils.h"
+#include <Gamebuino-Meta-ADTCRV.h>
+#include "utility/Misc.h"
 
 bool buttonPressed(Button button) {
     auto bstate = gb.buttons.states[(uint8_t)button];
@@ -32,4 +34,20 @@ bool buttonDown(Button button) {
     return bstate >= 1 && bstate < 0xFFFE;
 }
 
+void paletteFadeFromBlack(uint16_t* dest, const uint16_t* src, unsigned int val, unsigned int max) {
+    for (size_t ix = 0; ix < 16; ix++) {
+        unsigned int r, g, b;
+        Gamebuino_Meta::RGB888 color = Gamebuino_Meta::rgb565Torgb888(src[ix]);
+        r = color.r;
+        g = color.g;
+        b = color.b;
+        r = r * val / max;
+        g = g * val / max;
+        b = b * val / max;
+        color.r = r;
+        color.g = g;
+        color.b = b;
+        dest[ix] = Gamebuino_Meta::rgb888Torgb565(color);
+    }
+}
 

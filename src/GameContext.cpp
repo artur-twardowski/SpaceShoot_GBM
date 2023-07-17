@@ -26,6 +26,7 @@
 #include "Tileset.h"
 #include "Gamebuino-Meta-ADTCRV.h"
 #include "utility/Misc.h"
+#include "utility/Graphics/font3x5.c"
 
 using spaceshoot::tileset::AnimationSequence;
 using spaceshoot::tileset::animSequences;
@@ -331,21 +332,25 @@ namespace spaceshoot { namespace game {
     static inline void drawBorders(GameContext& ctx) {
         const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
 
+        gb.display.setFont(font3x5);
+        gb.display.setFontSize(2, 1);
+
         gb.display.setColor(COLOR_BAR_BACKGROUND);
         gb.display.fillRect(0,0,SCREEN_WIDTH, 8);
         gb.display.fillRect(0,SCREEN_HEIGHT-8,SCREEN_WIDTH, 8);
 
         gb.display.setColor(COLOR_SCORE);
-        gb.display.printf(10, 1, "%5d", ctx.score);
+        gb.display.printf(0, 0, "%5d", ctx.score);
 
         gb.display.setColor(COLOR_BOMBS);
-        gb.display.printf(64 - 4, 1, "%2d", ctx.numBombs);
+        gb.display.printf(60, 0, "%2d", ctx.numBombs);
 
         unsigned int remainingTime = (params.maxRunTime - ctx.runTime) / TARGET_FPS;
         gb.display.setColor(COLOR_TIME);
-        gb.display.printf(128 - 4 * 4, 1, "%d:%02d", remainingTime / 60, remainingTime % 60);
+        gb.display.printf(120, 0, "%d:%02d", remainingTime / 60, remainingTime % 60);
 
         if (ctx.flags & FLAG_SHOW_PROFILING_INFO) {
+            gb.display.setFontSize(1, 1);
             /* Profiling information for nerds */
             gb.display.setColor(COLOR_SCORE);
             uint32_t fps = 10000000 / gb.frameDurationMicros;
