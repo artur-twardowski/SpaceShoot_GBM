@@ -29,6 +29,9 @@ namespace spaceshoot { namespace context { namespace mainmenu {
 
     enum struct MenuPosition {
         NewGame = 0,
+#ifdef HIGHSCORES_IMPLEMENTED
+        Highscores,
+#endif
 #ifdef STORY_IMPLEMENTED
         Story,
 #endif

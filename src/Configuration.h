@@ -30,6 +30,8 @@ const size_t NUM_COLS=39;
 const unsigned int TARGET_FPS = 22;
 
 #define HIGH_RESOLUTION_MODE
+#define STORY_IMPLEMENTED
+#define HIGHSCORES_IMPLEMENTED
 
 #ifdef HIGH_RESOLUTION_MODE
     const size_t SCREEN_WIDTH = 160;

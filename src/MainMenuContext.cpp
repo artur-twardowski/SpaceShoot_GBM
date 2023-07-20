@@ -25,11 +25,13 @@
 #include "TitleScreenContext.h"
 #include "Configuration.h"
 #include "Utils.h"
+#include "utility/Misc.h"
 #include "font4x7.c"
 
 namespace spaceshoot { namespace context { namespace mainmenu {
 
     const char STR_NEW_GAME[] = "New game";
+    const char STR_HIGHSCORES[] = "Highscores";
     const char STR_STORY[] = "Story";
     const char STR_INSTRUCTIONS[] = "Instructions";
     const char STR_SETTINGS[] = "Settings";
@@ -49,51 +51,87 @@ namespace spaceshoot { namespace context { namespace mainmenu {
     
     const char STR_SHOW_PROFILING_INFO[] = "Profiling statistics";
 
+    const char KEYS_HELP_M1[] = "\x13\x12:navigate menu, \x01\x08:confirm";
+    const char KEYS_HELP_O1[] = "\x13\x12:navigate menu, \x02\x09:return";
+    const char KEYS_HELP_O2[] = "\x11\x10:adjust selected setting";
+
+    const uint8_t PAL_IDX_MENUPOS = 1;
+    const ColorIndex COLOR_MENUPOS_BG_INACTIVE = (ColorIndex)0;
+    const ColorIndex COLOR_MENUPOS_BG_ACTIVE = (ColorIndex)1;
+    const ColorIndex COLOR_MENUPOS_BG_ACTIVE_PARAM = (ColorIndex)2;
+    const ColorIndex COLOR_MENUPOS_FG_INACTIVE = (ColorIndex)3;
+    const ColorIndex COLOR_MENUPOS_FG_ACTIVE = (ColorIndex)4;
+    const ColorIndex COLOR_MENUPOS_FG_ACTIVE_PARAM = (ColorIndex)5;
+
     enum struct VisibleScreen {
         Main = 0,
         Settings = 1
     };
 
-    static void drawMenuPosition(uint8_t x, uint8_t y, const char* str, bool selected) {
+    static void drawMenuPositionGeneric(uint8_t x, uint8_t y, const char* str, ColorIndex bgColor, ColorIndex fgColor, bool invertedPalette) {
         for (size_t py = y - 2; py < y + 9; py++) {
-            gb.tft.colorCells.paletteToLine[py] = 1;
+            int k = invertedPalette ? (7 - (py - y)) : py - y;
+            uint8_t palIndex = k < 0 ? 0 : (k > 7 ? 7 : k);
+
+            gb.tft.colorCells.paletteToLine[py] = PAL_IDX_MENUPOS + palIndex;
         }
 
-        gb.display.setColor(selected ? INDEX_BEIGE : INDEX_BLUE);
+        gb.display.setColor(bgColor);
         gb.display.fillRect(0, y-2, SCREEN_WIDTH, 11);
         
-        gb.display.setColor(selected ? INDEX_BLACK : INDEX_WHITE);
+        gb.display.setColor(fgColor);
         gb.display.print(x, y, str);
+    }
+
+    static void drawMenuPosition(uint8_t x, uint8_t y, const char* str, bool selected) {
+        drawMenuPositionGeneric(x, y, str,
+                selected ? COLOR_MENUPOS_BG_ACTIVE : COLOR_MENUPOS_BG_INACTIVE,
+                selected ? COLOR_MENUPOS_FG_ACTIVE : COLOR_MENUPOS_FG_INACTIVE, false);
+
+    }
+
+    static void drawMenuPositionParam(uint8_t y, const char* str, bool selected) {
+        drawMenuPositionGeneric(SCREEN_WIDTH - 5 * strlen(str), y, str,
+                selected ? COLOR_MENUPOS_BG_ACTIVE_PARAM : COLOR_MENUPOS_BG_INACTIVE,
+                selected ? COLOR_MENUPOS_FG_ACTIVE_PARAM : COLOR_MENUPOS_FG_INACTIVE, false);
+
     }
 
     static void drawMenuPositionHCentered(uint8_t y, const char* str, bool selected) {
         drawMenuPosition(SCREEN_WIDTH / 2 - 5 * strlen(str) / 2, y, str, selected);
     }
 
-    static void drawMenuPositionParam(uint8_t x, uint8_t y, const char* str, bool selected) {
-        if (selected) {
-            gb.display.setColor(INDEX_LIGHTGREEN);
-        } else {
-            gb.display.setColor(INDEX_GREEN);
-        }
+    static void setUpPalettes(uint16_t* palBg, uint16_t barsPalettes[8][16]) {
+        paletteFadeFromBlack(palBg, titlescreen::gameLogoPalette, 7, 10);
+        gb.tft.colorCells.enabled = true;
+        gb.tft.colorCells.palettes[0] = (Color*)palBg;
 
-        gb.display.print(x, y, str);
+        for (size_t ix = 0; ix < 8; ix++) {
+            memcpy(barsPalettes[ix], Gamebuino_Meta::defaultColorPalette, sizeof(barsPalettes[ix]));
+            
+            barsPalettes[ix][(int)COLOR_MENUPOS_BG_INACTIVE] = Gamebuino_Meta::rgb888Torgb565({0, ix * 6, ix * 9});
+            barsPalettes[ix][(int)COLOR_MENUPOS_FG_INACTIVE] = Gamebuino_Meta::rgb888Torgb565({ix * 16, ix * 16 + 127, ix * 16 + 127});
+
+            barsPalettes[ix][(int)COLOR_MENUPOS_BG_ACTIVE] = Gamebuino_Meta::rgb888Torgb565({255, ix * 16 + 127, ix * 4});
+            barsPalettes[ix][(int)COLOR_MENUPOS_FG_ACTIVE] = Gamebuino_Meta::rgb888Torgb565({ix * 2, ix * 4, 0});
+
+            barsPalettes[ix][(int)COLOR_MENUPOS_BG_ACTIVE_PARAM] = Gamebuino_Meta::rgb888Torgb565({0, ix * 12 + 144, ix * 6 + 16});
+            barsPalettes[ix][(int)COLOR_MENUPOS_FG_ACTIVE_PARAM] = Gamebuino_Meta::rgb888Torgb565({ix * 4, ix * 16 , ix * 8});
+
+            gb.tft.colorCells.palettes[PAL_IDX_MENUPOS + ix] = (Color*) barsPalettes[ix];
+        }
     }
 
     MenuPosition run(game::Context& ctx) {
         int position = 0;
         size_t dx;
         uint16_t palBg[16];
-        paletteFadeFromBlack(palBg, titlescreen::gameLogoPalette, 5, 10);
-        VisibleScreen screen = VisibleScreen::Main;
-        gb.tft.colorCells.enabled = true;
-
-        gb.tft.colorCells.palettes[0] = (Color*)palBg;
-        gb.tft.colorCells.palettes[1] = (Color*)Gamebuino_Meta::defaultColorPalette;
-
-        memset(gb.tft.colorCells.paletteToLine, 0, SCREEN_HEIGHT);
+        uint16_t barsPalettes[8][16];
+        setUpPalettes(palBg, barsPalettes);
 
         Image backgroundImage(titlescreen::gameLogoData);
+
+        VisibleScreen screen = VisibleScreen::Main;
 
         while (1) {
             processEvents();
@@ -150,21 +188,29 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                 }
             }
 
+            memset(gb.tft.colorCells.paletteToLine, 0, SCREEN_HEIGHT);
+
             if (screen == VisibleScreen::Main) {
-                uint8_t y = 40;
+                uint8_t y = 20;
                 drawMenuPositionHCentered((y+=10), STR_NEW_GAME, static_cast<MenuPosition>(position) == MenuPosition::NewGame);
+#ifdef HIGHSCORES_IMPLEMENTED
+                drawMenuPositionHCentered((y+=10), STR_HIGHSCORES, static_cast<MenuPosition>(position) == MenuPosition::Highscores);
+#endif
 #ifdef STORY_IMPLEMENTED
                 drawMenuPositionHCentered((y+=10), STR_STORY, static_cast<MenuPosition>(position) == MenuPosition::Story);
 #endif
                 drawMenuPositionHCentered((y+=10), STR_INSTRUCTIONS, static_cast<MenuPosition>(position) == MenuPosition::Instructions);
                 drawMenuPositionHCentered((y+=10), STR_SETTINGS, static_cast<MenuPosition>(position) == MenuPosition::Settings);
                 drawMenuPositionHCentered((y+=10), STR_RETURN_TO_BOOTLOADER, static_cast<MenuPosition>(position) == MenuPosition::ReturnToBootloader);
+
+                gb.display.setColor(12);
+                gb.display.print(10, 0, KEYS_HELP_M1);
             }
 
             if (screen == VisibleScreen::Settings) {
-                drawMenuPosition(0, 20, STR_GAME_DIFFICULTY, position == 0);
-                drawMenuPosition(0, 50, STR_SMOOTH_SCROLLING, position == 1);
-                drawMenuPosition(0, 80, STR_SHOW_PROFILING_INFO, position == 2);
+                drawMenuPosition(0, 24, STR_GAME_DIFFICULTY, position == 0);
+                drawMenuPosition(0, 47, STR_SMOOTH_SCROLLING, position == 1);
+                drawMenuPosition(0, 70, STR_SHOW_PROFILING_INFO, position == 2);
 
                 const char* s;
                 switch (ctx.difficultyLevel) {
@@ -178,8 +224,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
 
                 // TODO: refactor
 
-                dx = SCREEN_WIDTH - 5 * strlen(s);
-                drawMenuPositionParam(dx, 32, s, position == 0);
+                drawMenuPositionParam(35, s, position == 0);
 
                 if (ctx.flags & game::FLAG_SMOOTH_SCROLLING) {
                     s = STR_YES;
@@ -187,8 +232,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                dx = SCREEN_WIDTH - 5 * strlen(s);
-                drawMenuPositionParam(dx, 62, s, position == 1);
+                drawMenuPositionParam(58, s, position == 1);
 
                 if (ctx.flags & game::FLAG_SHOW_PROFILING_INFO) {
                     s = STR_YES;
@@ -196,8 +240,11 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                dx = SCREEN_WIDTH - 5 * strlen(s);
-                drawMenuPositionParam(dx, 92, s, position == 2);
+                drawMenuPositionParam(81, s, position == 2);
+
+                gb.display.setColor(12);
+                gb.display.print(10, 0, KEYS_HELP_O1);
+                gb.display.print(10, 8, KEYS_HELP_O2);
             }
 
         }

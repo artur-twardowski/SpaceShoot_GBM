@@ -267,13 +267,19 @@ using ElementID = tileset::ElementID;
         }
     }
 
-    static inline void initColorCells(Color barsPalettes[16][8], uint8_t& paletteIndex) {
+    static inline void initColorCells(Color barsPalettes[16][8]) {
         /* Draw a blank frame to suppress artifacts */
+        gb.tft.colorCells.enabled = false;
+        gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
         gb.display.clear();
         processEvents();
 
+        gb.tft.colorCells.enabled = true;
+        tileset::applyPalette(0, 8, SCREEN_HEIGHT - 8);
+
         for (size_t ix = 0; ix < 8; ix++) {
-            memcpy(barsPalettes[ix], Gamebuino_Meta::defaultColorPalette, sizeof(barsPalettes[ix]));
+            size_t paletteIndex = ix + 1;
+            memset(barsPalettes[ix], 0, sizeof(barsPalettes[ix]));
             
             barsPalettes[ix][(int)COLOR_BAR_BACKGROUND] = (Color) Gamebuino_Meta::rgb888Torgb565({0, 0, (8 - ix) * 24});
             barsPalettes[ix][(int)COLOR_SCORE] = (Color) Gamebuino_Meta::rgb888Torgb565({(7 - ix) * 32, (8 - ix) * 31, 255});
@@ -283,11 +289,8 @@ using ElementID = tileset::ElementID;
             gb.tft.colorCells.palettes[paletteIndex] = barsPalettes[ix];
             gb.tft.colorCells.paletteToLine[ix] = paletteIndex;
             gb.tft.colorCells.paletteToLine[SCREEN_HEIGHT - ix - 1] = paletteIndex;
-            paletteIndex++;
         }
 
-        tileset::applyPalette(paletteIndex++, 8, SCREEN_HEIGHT - 8);
-        gb.tft.colorCells.enabled = true;
     }
 
     static inline void initPlayerTiles(tileset::ElementID playerTiles[4]) {
@@ -417,10 +420,9 @@ using ElementID = tileset::ElementID;
 
     GameState run(Context& ctx, Image& tileset) {
         Color barsPalettes[16][8];
-        uint8_t paletteIndex = 1;
         tileset::ElementID playerTiles[4];
 
-        initColorCells(barsPalettes, paletteIndex);
+        initColorCells(barsPalettes);
         initPlayerTiles(playerTiles);
         
       DrawScene drawScene = DrawScene::Gameplay;
@@ -447,8 +449,6 @@ using ElementID = tileset::ElementID;
         size_t drawY = GAMEBOARD_Y;
         const size_t WARNING_X = NUM_COLS / 2 + 5;
         size_t shipX = 0;
-        gb.display.setColor(INDEX_BLACK);
-        gb.display.clear();
 
         if (drawScene != DrawScene::Gameplay) {
             drawSceneCounter++;
@@ -477,6 +477,8 @@ using ElementID = tileset::ElementID;
             }
         }
 
+        memset(gb.display._buffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
+        gb.display.clear();
         drawBorders(ctx);
         drawGameField(ctx, tileset);
         drawPlayer(shipX, ctx.playerPosition, playerTiles, tileset);
