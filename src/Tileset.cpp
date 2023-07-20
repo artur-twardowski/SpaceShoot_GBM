@@ -96,8 +96,8 @@ const AnimationSequence animSequences[] = {
   /* Debris8 */ {ElementID::Debris8, 0},
 };
 
-static_assert(sizeof(animSequences) / sizeof(animSequences[0]) == static_cast<size_t>(ElementID::Count));
-static_assert(static_cast<size_t>(ElementID::Count) <= BLOCK_MASK);
+static_assert(sizeof(animSequences) / sizeof(animSequences[0]) == static_cast<size_t>(tileset::ElementID::Count));
+static_assert(static_cast<size_t>(tileset::ElementID::Count) <= context::game::BLOCK_MASK);
 
 void draw(Image& tileset, uint16_t x, uint16_t y, ElementID elementID) {
     gb.display.drawImage(x, y,

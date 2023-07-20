@@ -26,7 +26,7 @@
 #include "font4x7.c"
 #include "utility/Graphics/font3x5.c"
 
-namespace spaceshoot { namespace instructions {
+namespace spaceshoot { namespace context { namespace instructions {
 
     static const char STR_HEADER[] = "INSTRUCTIONS";
 
@@ -218,4 +218,4 @@ namespace spaceshoot { namespace instructions {
             }
         }
     }
-}}
+}}} // namespace spaceshoot::context::instructions

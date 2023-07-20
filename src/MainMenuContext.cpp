@@ -20,14 +20,14 @@
 //     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //     SOFTWARE.
 
-#include "MainMenu.h"
-#include "Configuration.h"
+#include "MainMenuContext.h"
 #include "GameContext.h"
-#include "TitleScreen.h"
+#include "TitleScreenContext.h"
+#include "Configuration.h"
 #include "Utils.h"
 #include "font4x7.c"
 
-namespace spaceshoot { namespace mainmenu {
+namespace spaceshoot { namespace context { namespace mainmenu {
 
     const char STR_NEW_GAME[] = "New game";
     const char STR_STORY[] = "Story";
@@ -80,7 +80,7 @@ namespace spaceshoot { namespace mainmenu {
         gb.display.print(x, y, str);
     }
 
-    MenuPosition run(GameContext& ctx) {
+    MenuPosition run(game::Context& ctx) {
         int position = 0;
         size_t dx;
         uint16_t palBg[16];
@@ -120,8 +120,8 @@ namespace spaceshoot { namespace mainmenu {
                 if (screen == VisibleScreen::Settings) {
                     switch (position) {
                     case 0: if (ctx.difficultyLevel > 0) ctx.difficultyLevel--; break;
-                    case 1: ctx.flags &= ~FLAG_SMOOTH_SCROLLING; break;
-                    case 2: ctx.flags &= ~FLAG_SHOW_PROFILING_INFO; break;
+                    case 1: ctx.flags &= ~game::FLAG_SMOOTH_SCROLLING; break;
+                    case 2: ctx.flags &= ~game::FLAG_SHOW_PROFILING_INFO; break;
                     }
                 }
             }
@@ -129,8 +129,8 @@ namespace spaceshoot { namespace mainmenu {
                 if (screen == VisibleScreen::Settings) {
                     switch (position) {
                     case 0: if (ctx.difficultyLevel < 5) ctx.difficultyLevel++; break;
-                    case 1: ctx.flags |= FLAG_SMOOTH_SCROLLING; break;
-                    case 2: ctx.flags |= FLAG_SHOW_PROFILING_INFO; break;
+                    case 1: ctx.flags |= game::FLAG_SMOOTH_SCROLLING; break;
+                    case 2: ctx.flags |= game::FLAG_SHOW_PROFILING_INFO; break;
                     }
                 }
             }
@@ -176,10 +176,12 @@ namespace spaceshoot { namespace mainmenu {
                     case 5: s = STR_GAME_DIFFICULTY_L6; break;
                 }
 
+                // TODO: refactor
+
                 dx = SCREEN_WIDTH - 5 * strlen(s);
                 drawMenuPositionParam(dx, 32, s, position == 0);
 
-                if (ctx.flags & FLAG_SMOOTH_SCROLLING) {
+                if (ctx.flags & game::FLAG_SMOOTH_SCROLLING) {
                     s = STR_YES;
                 } else {
                     s = STR_NO;
@@ -188,7 +190,7 @@ namespace spaceshoot { namespace mainmenu {
                 dx = SCREEN_WIDTH - 5 * strlen(s);
                 drawMenuPositionParam(dx, 62, s, position == 1);
 
-                if (ctx.flags & FLAG_SHOW_PROFILING_INFO) {
+                if (ctx.flags & game::FLAG_SHOW_PROFILING_INFO) {
                     s = STR_YES;
                 } else {
                     s = STR_NO;
@@ -202,4 +204,4 @@ namespace spaceshoot { namespace mainmenu {
 
     }
 
-}}
+}}} // namespace spaceshoot::context::mainmenu

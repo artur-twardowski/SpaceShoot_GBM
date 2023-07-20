@@ -24,6 +24,9 @@
 #define SPACESHOOT_H
 
 namespace spaceshoot {
+
+    extern const char VERSION[];
+
     void init();
     void main();
 }

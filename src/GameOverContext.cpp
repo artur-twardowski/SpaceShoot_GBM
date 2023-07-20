@@ -20,13 +20,13 @@
 //     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //     SOFTWARE.
 
-#include "GameOver.h"
-#include "Utils.h"
+#include "GameOverContext.h"
 #include "GameContext.h"
+#include "Utils.h"
 #include "utility/Graphics/font3x5.c"
 #include "font4x7.c"
 
-namespace spaceshoot { namespace gameover {
+namespace spaceshoot { namespace context { namespace gameover {
 
     static bool decreaseByInterval(uint32_t& measure, uint32_t interval, uint32_t& score) {
         if (measure >= interval) {
@@ -37,7 +37,7 @@ namespace spaceshoot { namespace gameover {
         return false;
     }
 
-    static void drawStats(uint32_t score, uint16_t accuracy, uint32_t accuracyPoints, uint32_t bonus, uint32_t totalScore, uint16_t showPhase, GameContext& ctx) {
+    static void drawStats(uint32_t score, uint16_t accuracy, uint32_t accuracyPoints, uint32_t bonus, uint32_t totalScore, uint16_t showPhase, game::Context& ctx) {
       const unsigned int DISPLAY_X = SCREEN_WIDTH - 2 * 4 * 5 - 8;
       const unsigned int DISPLAY_X1 = DISPLAY_X - 6 * 5 - 8;
 
@@ -106,12 +106,12 @@ namespace spaceshoot { namespace gameover {
           gb.display.setColor(INDEX_WHITE);
           gb.display.setFontSize(1, 1);
           gb.display.setFont(font4x7);
-          gb.display.print(8, 112, "\x01\x08 to play again");
-          gb.display.print(8, 120, "\x02\x09 to return to main menu");
+          gb.display.print(8, 112, "Press \x01\x08 to play again");
+          gb.display.print(8, 120, "Press \x02\x09 to return to main menu");
       }
     }
 
-    bool run(GameContext& ctx, bool timedOut) {
+    bool run(game::Context& ctx, bool timedOut) {
         uint32_t accuracy;
         uint32_t accuracyPoints;
         uint32_t bonus;
@@ -177,4 +177,4 @@ namespace spaceshoot { namespace gameover {
         }
 
     }
-}}
+}}} // namespace spaceshoot::context::gameover

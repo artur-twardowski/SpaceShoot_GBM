@@ -20,13 +20,27 @@
 //     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //     SOFTWARE.
 
-#ifndef SST_GAMEOVER_H
-#define SST_GAMEOVER_H
+#ifndef SST_MAINMENU_H
+#define SST_MAINMENU_H
 
 #include "GameContext.h"
 
-namespace spaceshoot { namespace gameover {
-    bool run(GameContext& ctx, bool timedOut);
-}}
+namespace spaceshoot { namespace context { namespace mainmenu {
 
-#endif // SST_GAMEOVER_H
+    enum struct MenuPosition {
+        NewGame = 0,
+#ifdef STORY_IMPLEMENTED
+        Story,
+#endif
+        Instructions,
+        Settings,
+        ReturnToBootloader,
+
+        Count
+    };
+
+    MenuPosition run(game::Context& ctx);
+
+}}} // namespace spaceshoot::context::mainmenu
+
+#endif // SST_MAINMENU_H

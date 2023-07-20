@@ -20,27 +20,16 @@
 //     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //     SOFTWARE.
 
-#ifndef SST_MAINMENU_H
-#define SST_MAINMENU_H
+#ifndef SST_TITLESCREEN_H
+#define SST_TITLESCREEN_H
 
-#include "GameContext.h"
+#include <stdint.h>
 
-namespace spaceshoot { namespace mainmenu {
+namespace spaceshoot { namespace context { namespace titlescreen {
+    extern const uint16_t gameLogoPalette[];
+    extern const uint8_t gameLogoData[];
 
-    enum struct MenuPosition {
-        NewGame = 0,
-#ifdef STORY_IMPLEMENTED
-        Story,
-#endif
-        Instructions,
-        Settings,
-        ReturnToBootloader,
+    void run();
+}}} // namespace spaceshoot::context::titlescreen
 
-        Count
-    };
-
-    MenuPosition run(GameContext& ctx);
-
-}}
-
-#endif // SST_MAINMENU_H
+#endif // SST_TITLESCREEN_H

@@ -28,11 +28,9 @@
 #include "utility/Misc.h"
 #include "utility/Graphics/font3x5.c"
 
-using spaceshoot::tileset::AnimationSequence;
-using spaceshoot::tileset::animSequences;
-using spaceshoot::tileset::ElementID;
+namespace spaceshoot { namespace context { namespace game {
 
-namespace spaceshoot { namespace game {
+using ElementID = tileset::ElementID;
 
     enum class DrawScene {
         Gameplay, Winning, Losing
@@ -64,12 +62,12 @@ namespace spaceshoot { namespace game {
     const size_t PLAYER_TILE_FRONT_LEFT = 2;
     const size_t PLAYER_TILE_FRONT_RIGHT = 3;
 
-    void restart(GameContext& ctx) {
+    void restart(Context& ctx) {
         memset(reinterpret_cast<void*>(&ctx.playerPosition), 0, sizeof(ctx) - 2);
         ctx.playerPosition = NUM_ROWS / 2;
     }
 
-    bool handleHit(GameContext& ctx, ElementID blockType) {
+    bool handleHit(Context& ctx, tileset::ElementID blockType) {
         switch (blockType) {
         case ElementID::Stone:
         case ElementID::Debris1:
@@ -107,13 +105,13 @@ namespace spaceshoot { namespace game {
         }
     }
 
-    bool handleMiss(GameContext& ctx, ElementID blockType, uint8_t row, uint8_t col) {
+    bool handleMiss(Context& ctx, ElementID blockType, uint8_t row, uint8_t col) {
         switch (blockType) {
         case ElementID::Bomb1:
         case ElementID::Bomb2:
         case ElementID::Bomb3:
         case ElementID::Bomb4:
-            game::setBlock(ctx, row, col, ElementID::BombStoned);
+            setBlock(ctx, row, col, ElementID::BombStoned);
             ctx.bombsMissed++;
             return true;
 
@@ -121,7 +119,7 @@ namespace spaceshoot { namespace game {
         case ElementID::Bonus2:
         case ElementID::Bonus3:
         case ElementID::Bonus4:
-            game::setBlock(ctx, row, col, ElementID::BonusStoned);
+            setBlock(ctx, row, col, ElementID::BonusStoned);
             ctx.bonusBlocksMissed++;
             return true;
 
@@ -130,7 +128,7 @@ namespace spaceshoot { namespace game {
         }
     }
 
-    static void checkCollisions(GameContext& ctx, uint16_t& hits, uint8_t row) {
+    static void checkCollisions(Context& ctx, uint16_t& hits, uint8_t row) {
         for (size_t col = 0; col < NUM_COLS; col++) {
             bool missile = game::getMissile(ctx, row, col);
             auto blk = game::getBlock(ctx, row, col);
@@ -145,7 +143,7 @@ namespace spaceshoot { namespace game {
     }
 
 
-    static GameState updateGameField(GameContext& ctx, DrawScene drawScene) {
+    static GameState updateGameField(Context& ctx, DrawScene drawScene) {
         const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
 
         uint16_t hits = 0;
@@ -166,7 +164,7 @@ namespace spaceshoot { namespace game {
                 }
 
                 /* Handle stoning of function blocks and update of animated tiles */
-                const AnimationSequence& animSeq = animSequences[static_cast<size_t>(blk)];
+                auto& animSeq = tileset::animSequences[static_cast<size_t>(blk)];
                 if (blk != ElementID::None) {
                     /* TODO: magic number */
                     if (game::isFunctionBlock(blk) && col == 19) {
@@ -245,20 +243,20 @@ namespace spaceshoot { namespace game {
 
     }
 
-    void shoot(GameContext& ctx) {
+    void shoot(Context& ctx) {
         gb.sound.tone(100, 30);
         ctx.shoots++;
         setMissile(ctx, ctx.playerPosition, 0, true);
     }
 
-    void salvo(GameContext& ctx) {
+    void salvo(Context& ctx) {
       if (ctx.numBombs > 0) {
         ctx.salvoCounter += 4;
         ctx.numBombs--;
       }
     }
 
-    void continueSalvo(GameContext& ctx) {
+    void continueSalvo(Context& ctx) {
         if (ctx.salvoCounter > 0) {
             gb.sound.tone(ctx.salvoCounter * 150, 50);
             for (size_t row = 0; row < NUM_ROWS; row++) {
@@ -299,7 +297,7 @@ namespace spaceshoot { namespace game {
         playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::None;
     }
 
-    static inline void drawGameField(GameContext& ctx, Image& tileSet) {
+    static inline void drawGameField(Context& ctx, Image& tileSet) {
         size_t spriteDx = 0;
         if (ctx.flags & FLAG_SMOOTH_SCROLLING) {
             spriteDx = ((ctx.runTime - 1) >> 1) & 0x03;
@@ -329,7 +327,7 @@ namespace spaceshoot { namespace game {
         }
     }
 
-    static inline void drawBorders(GameContext& ctx) {
+    static inline void drawBorders(Context& ctx) {
         const DifficultyLevelParams& params = DIFFICULTIES[ctx.difficultyLevel];
 
         gb.display.setFont(font3x5);
@@ -387,7 +385,7 @@ namespace spaceshoot { namespace game {
         updateAnimation(playerTiles, 4);
     }
 
-    static inline void handleButtons(GameContext& ctx, tileset::ElementID* playerTiles, DrawScene& drawScene) {
+    static inline void handleButtons(Context& ctx, tileset::ElementID* playerTiles, DrawScene& drawScene) {
         if (buttonPressed(BUTTON_UP)) {
             if (ctx.playerPosition > 0)
                 ctx.playerPosition--;
@@ -417,7 +415,7 @@ namespace spaceshoot { namespace game {
         }
     }
 
-    GameState run(GameContext& ctx, Image& tileset) {
+    GameState run(Context& ctx, Image& tileset) {
         Color barsPalettes[16][8];
         uint8_t paletteIndex = 1;
         tileset::ElementID playerTiles[4];
@@ -491,4 +489,4 @@ namespace spaceshoot { namespace game {
       }
     }
 
-}} // namespace spaceshoot::game
+}}} // namespace spaceshoot::context::game

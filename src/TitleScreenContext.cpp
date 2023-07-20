@@ -20,7 +20,8 @@
 //     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //     SOFTWARE.
 
-#include "TitleScreen.h"
+#include "TitleScreenContext.h"
+#include "SpaceShoot.h"
 #include "Utils.h"
 #include "utility/Misc.h"
 #include "Configuration.h"
@@ -34,7 +35,7 @@ namespace spaceshoot {
     extern Image tileSet;
 }
 
-namespace spaceshoot { namespace titlescreen {
+namespace spaceshoot { namespace context { namespace titlescreen {
 
     using namespace Gamebuino_Meta;
 
@@ -1448,5 +1449,5 @@ namespace spaceshoot { namespace titlescreen {
             if (frame_index == 168) break;
         }
     }
-}} // namespace spaceshoot::titlescreen
+}}} // namespace spaceshoot::context::titlescreen
 

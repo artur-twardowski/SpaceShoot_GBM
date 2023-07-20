@@ -20,16 +20,13 @@
 //     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //     SOFTWARE.
 
-#ifndef SST_TITLESCREEN_H
-#define SST_TITLESCREEN_H
+#ifndef SST_GAMEOVER_H
+#define SST_GAMEOVER_H
 
-#include <stdint.h>
+#include "GameContext.h"
 
-namespace spaceshoot { namespace titlescreen {
-    extern const uint16_t gameLogoPalette[];
-    extern const uint8_t gameLogoData[];
+namespace spaceshoot { namespace context { namespace gameover {
+    bool run(game::Context& ctx, bool timedOut);
+}}}
 
-    void run();
-}}
-
-#endif // SST_TITLESCREEN_H
+#endif // SST_GAMEOVER_H

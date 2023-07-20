@@ -69,8 +69,6 @@ static inline void updateAnimation(ElementID* memArea, size_t elementCount) {
     }
 }
 
-//static inline void updateAnimation
-
 }} // namespace spaceshoot::tileset
 
 #endif // SST_TILESET_H

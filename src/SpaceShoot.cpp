@@ -24,17 +24,20 @@
 #include "Gamebuino-Meta-ADTCRV.h"
 #include "Tileset.h"
 #include "GameContext.h"
-#include "GameOver.h"
-#include "MainMenu.h"
-#include "TitleScreen.h"
+#include "GameOverContext.h"
+#include "MainMenuContext.h"
+#include "TitleScreenContext.h"
 #include "InstructionsContext.h"
-
-const char VERSION[] = "v0.2-R717";
 
 namespace spaceshoot {
 
+using MenuPosition = context::mainmenu::MenuPosition;
+using GameState = context::game::GameState;
+
+    const char VERSION[] = "v0.2-R720";
+
     Image tileSet;
-    GameContext ctx;
+    context::game::Context ctx;
 
     uint8_t paletteToCell[SCREEN_HEIGHT];
 
@@ -48,42 +51,42 @@ namespace spaceshoot {
         gb.tft.colorCells.paletteToLine = paletteToCell;
         gb.tft.colorCells.palettes = palettes;
 
-        spaceshoot::tileset::load(tileSet);
+        tileset::load(tileSet);
         ctx.difficultyLevel = 2;
-        ctx.flags = FLAG_SMOOTH_SCROLLING;
+        ctx.flags = context::game::FLAG_SMOOTH_SCROLLING;
     }
 
     void main() {
-        spaceshoot::titlescreen::run();
+        context::titlescreen::run();
 
         bool showMenu = true;
         while (1) {
-            mainmenu::MenuPosition menuPosition;
+            MenuPosition menuPosition;
             if (showMenu) {
-                menuPosition = spaceshoot::mainmenu::run(ctx);
+                menuPosition = context::mainmenu::run(ctx);
 
                 switch (menuPosition) {
-                    case mainmenu::MenuPosition::Instructions:
-                        instructions::run(tileSet);
+                    case MenuPosition::Instructions:
+                        context::instructions::run(tileSet);
                         continue;
 
-                    case mainmenu::MenuPosition::NewGame:
+                    case MenuPosition::NewGame:
                         break;
 
-                    case mainmenu::MenuPosition::ReturnToBootloader:
+                    case MenuPosition::ReturnToBootloader:
                         gb.bootloader.loader();
 
                     default: continue;
                 }
             }
 
-            spaceshoot::game::restart(ctx);
-            GameState state = spaceshoot::game::run(ctx, tileSet);
+            context::game::restart(ctx);
+            GameState state = context::game::run(ctx, tileSet);
 
             if (state == GameState::GameOverTimeout) {
-                showMenu = spaceshoot::gameover::run(ctx, true);
+                showMenu = context::gameover::run(ctx, true);
             } else if (state == GameState::GameOverLost) {
-                showMenu = spaceshoot::gameover::run(ctx, false);
+                showMenu = context::gameover::run(ctx, false);
             }
         }
     }

@@ -25,8 +25,8 @@
 
 #include "Gamebuino-Meta-ADTCRV.h"
 
-namespace spaceshoot { namespace instructions {
+namespace spaceshoot { namespace context { namespace instructions {
         void run(Image& tileSet);
-}}
+}}} // namespace spaceshoot::context::instructions
 
 #endif // SST_INSTRUCTIONSCONTEXT_H
