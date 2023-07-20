@@ -106,8 +106,8 @@ namespace spaceshoot { namespace gameover {
           gb.display.setColor(INDEX_WHITE);
           gb.display.setFontSize(1, 1);
           gb.display.setFont(font4x7);
-          gb.display.print(8, 112, "\x15\x16 to play again");
-          gb.display.print(8, 120, "\x0F\x17 to return to main menu");
+          gb.display.print(8, 112, "\x01\x08 to play again");
+          gb.display.print(8, 120, "\x02\x09 to return to main menu");
       }
     }
 

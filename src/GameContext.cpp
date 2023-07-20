@@ -342,8 +342,10 @@ namespace spaceshoot { namespace game {
         gb.display.setColor(COLOR_SCORE);
         gb.display.printf(0, 0, "%5d", ctx.score);
 
-        gb.display.setColor(COLOR_BOMBS);
-        gb.display.printf(60, 0, "%2d", ctx.numBombs);
+        if (ctx.numBombs > 0) {
+            gb.display.setColor(COLOR_BOMBS);
+            gb.display.printf(60, 0, "%2d", ctx.numBombs);
+        }
 
         unsigned int remainingTime = (params.maxRunTime - ctx.runTime) / TARGET_FPS;
         gb.display.setColor(COLOR_TIME);
