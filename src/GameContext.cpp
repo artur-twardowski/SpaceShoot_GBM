@@ -336,10 +336,6 @@ using ElementID = tileset::ElementID;
         gb.display.setFont(font3x5);
         gb.display.setFontSize(2, 1);
 
-        gb.display.setColor(COLOR_BAR_BACKGROUND);
-        gb.display.fillRect(0,0,SCREEN_WIDTH, 8);
-        gb.display.fillRect(0,SCREEN_HEIGHT-8,SCREEN_WIDTH, 8);
-
         gb.display.setColor(COLOR_SCORE);
         gb.display.printf(0, 0, "%5d", ctx.score);
 
@@ -478,7 +474,6 @@ using ElementID = tileset::ElementID;
         }
 
         memset(gb.display._buffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
-        gb.display.clear();
         drawBorders(ctx);
         drawGameField(ctx, tileset);
         drawPlayer(shipX, ctx.playerPosition, playerTiles, tileset);
