@@ -166,10 +166,10 @@ namespace spaceshoot { namespace context { namespace mainmenu {
             }
 
             if (screen == VisibleScreen::Settings) {
-                drawMenuPosition(0, 18, STR_GAME_DIFFICULTY, position == 0);
-                drawMenuPosition(0, 41, STR_SMOOTH_SCROLLING, position == 1);
-                drawMenuPosition(0, 64, STR_SHOW_BACKGROUND, position == 2);
-                drawMenuPosition(0, 87, STR_SHOW_PROFILING_INFO, position == 3);
+                drawMenuPosition(0, 24, STR_GAME_DIFFICULTY, position == 0);
+                drawMenuPosition(0, 50, STR_SMOOTH_SCROLLING, position == 1);
+                drawMenuPosition(0, 76, STR_SHOW_BACKGROUND, position == 2);
+                drawMenuPosition(0, 102, STR_SHOW_PROFILING_INFO, position == 3);
 
                 const char* s;
                 switch (ctx.difficultyLevel) {
@@ -183,7 +183,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
 
                 // TODO: refactor
 
-                drawMenuPositionParam(29, s, position == 0);
+                drawMenuPositionParam(35, s, position == 0);
 
                 if (ctx.flags & game::FLAG_SMOOTH_SCROLLING) {
                     s = STR_YES;
@@ -191,7 +191,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                drawMenuPositionParam(52, s, position == 1);
+                drawMenuPositionParam(61, s, position == 1);
 
                 if (ctx.flags & game::FLAG_SHOW_BACKGROUND) {
                     s = STR_YES;
@@ -199,7 +199,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                drawMenuPositionParam(75, s, position == 2);
+                drawMenuPositionParam(87, s, position == 2);
 
                 if (ctx.flags & game::FLAG_SHOW_PROFILING_INFO) {
                     s = STR_YES;
@@ -207,7 +207,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                drawMenuPositionParam(98, s, position == 3);
+                drawMenuPositionParam(113, s, position == 3);
 
                 gb.display.setColor(12);
                 gb.display.print(10, 0, KEYS_HELP_O1);
