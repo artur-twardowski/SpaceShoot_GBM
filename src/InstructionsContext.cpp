@@ -30,41 +30,88 @@ namespace spaceshoot { namespace context { namespace instructions {
 
     static const char STR_HEADER[] = "INSTRUCTIONS";
 
+    static const char STR_PAGING_FIRST[] = "\x13:next page";
+    static const char STR_PAGING_MID[] = "\x12:previous page \x13:next page";
+    static const char STR_PAGING_LAST[] = "\x12:previous page";
+    
+    static const char STR_RET_MENU[] = "\x02\x09:return to menu";
+
     static const char STR_SHIP[] = "Your space ship.";
-    static const char STR_CONTROLS1[] = "Use the D-Pad";
-    static const char STR_CONTROLS2[] = "to move up and down.";
-    static const char STR_CONTROLS3[] = "to fire a missile.";
+    static const char STR_SHIP_CTRL1[] = "Use the D-Pad(\x12\x13)to move up";
+    static const char STR_SHIP_CTRL2[] = "and down. Press \x01\x08 button";
+    static const char STR_SHIP_CTRL3[] = "to fire missiles. You can keep";
+    static const char STR_SHIP_CTRL4[] = "these buttons pressed for conti-";
+    static const char STR_SHIP_CTRL5[] = "nuous movement and/or firing.";
     static const char STR_BLOCKS1[] = "Debris to destroy. Don't";
     static const char STR_BLOCKS2[] = "let them reach the station.";
     static const char STR_SCORING1[] = "Each hit is worth 5 points.";
     static const char STR_BLOCKS3[] = "A bomb. Shoot it to be able";
     static const char STR_BLOCKS4[] = "to fire a salvo.";
-    static const char STR_CONTROLS4[] = "Press [B] button to fire";
-    static const char STR_CONTROLS5[] = "a salvo, if equipped.";
-    static const char STR_BLOCKS5[] = "A bonus block. Shoot it to get";
-    static const char STR_BLOCKS6[] = "extra points.";
+                                       /* -------|-------|-------|-------| */
+    static const char STR_BOMB_CTRL1[] = "You will see a red flash of the";
+    static const char STR_BOMB_CTRL2[] = "console lights when you collect";
+    static const char STR_BOMB_CTRL3[] = "one. Press \x02\x09 to use it. ";
+    static const char STR_BONUS_HINT1[] = "Again, you will see a green";
+    static const char STR_BONUS_HINT2[] = "flash on the right hand side if";
+    static const char STR_BONUS_HINT3[] = "you hit this block.";
+    static const char STR_LIGHTS_EN[] = "(unless you disabled the lights)";
+
+    static const char STR_CONTROLS4[] = "Press \x02\x09 button to fire a salvo";
+    static const char STR_CONTROLS5[] = "if equipped. ";
+    static const char STR_BLOCKS5[] = "A bonus block. Shoot it";
+    static const char STR_BLOCKS6[] = "to get extra points.";
     static const char STR_SCORING2[] = "125 points, to be precise.";
 
-    static const char STR_HINT1A[] = "Bombs and bonus blocks turn into stone";
-    static const char STR_HINT1B[] = "when they approach too close.";
-    static const char STR_HINT1C[] = "Better hit them as soon as you can.";
+    static const char STR_HINT1A[] = "Bombs and bonus blocks turn into";
+    static const char STR_HINT1B[] = "stone when they are too close";
+    static const char STR_HINT1C[] = "(after passing halfway the dis-";
+    static const char STR_HINT1D[] = "tance). Better hit them as soon";
+    static const char STR_HINT1E[] = "as you can.";
 
-    static const char STR_HINT3[] = "Don't waste the salvos when the debris";
-    static const char STR_HINT4[] = "are far away. Fire them when it gets";
-    static const char STR_HINT5[] = "really hot!";
+                                   /* -------|-------|-------|-------| */
+    static const char STR_HINT2A[] = "Don't waste your salvos while";
+    static const char STR_HINT2B[] = "the debris are far away.";
+    static const char STR_HINT2C[] = "Fire them when it gets really";
+    static const char STR_HINT2D[] = "hot! You'll see, close to";
+    static const char STR_HINT2E[] = "the end of the game you will";
+    static const char STR_HINT2F[] = "desperately need them.";
 
-    static const char STR_HINT6[] = "Every salvo left is worth 100 points";
-    static const char STR_HINT7[] = "of bonus added at the end of the game.";
-    static const char STR_HINT8[] = "Maybe you should not use them when";
-    static const char STR_HINT9[] = "the mission is lost anyway? Remember,";
-    static const char STR_HINT10[] = "good accuracy is awarded...";
-    static const char STR_SCORING3[] = "You can get up to 2000 points if you";
-    static const char STR_SCORING4[] = "don't waste any shot.";
-    static const char STR_SCORING5[] = "Clearing all the debris will bring";
-    static const char STR_SCORING6[] = "extra 500 points... Go for it!";
-    
-    static const char STR_HIDDEN1[] = "You wanted to force the console";
-    static const char STR_HIDDEN2[] = "to read outside the memory, didn't you?";
+                                   /* -------|-------|-------|-------| */
+    static const char STR_HINT3A[] = "Every salvo remaining is worth";
+    static const char STR_HINT3B[] = "100 points of bonus added"; 
+    static const char STR_HINT3C[] = "at the end of the game.";
+    static const char STR_HINT3D[] = "Maybe you should not use them";
+    static const char STR_HINT3E[] = "when the mission is lost anyway?";
+    static const char STR_HINT3F[] = "Keep in mind that good accuracy";
+    static const char STR_HINT3G[] = "is awarded...";
+
+    static const char STR_SCORING3A[] = "You can get up to 2000 points";
+    static const char STR_SCORING3B[] = "if you don't waste any shot.";
+    static const char STR_SCORING3C[] = "Clearing all the debris will";
+    static const char STR_SCORING3D[] = "give you extra 500 points...";
+    static const char STR_SCORING3E[] = "Go for it!";
+
+    static const char STR_HIDDEN1A[] = "Who told you that \x04\x14 button";
+    static const char STR_HIDDEN1B[] = "has any meaning here?";
+
+    static void setupPalettesForPages(uint8_t page) {
+        switch (page) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 128:
+            case 129:
+                memset(gb.tft.colorCells.paletteToLine + 0, 1, 20);
+                memset(gb.tft.colorCells.paletteToLine + 20, 0, 108);
+                break;
+            case 127:
+            case 130:
+                memset(gb.tft.colorCells.paletteToLine, 1, 128);
+                break;
+        }
+    }
 
     void run(Image& tileSet) {
         tileset::ElementID elements[] = {
@@ -84,94 +131,184 @@ namespace spaceshoot { namespace context { namespace instructions {
             tileset::ElementID::Bonus1
         };
 
-        const uint8_t COLOR_DESCRIPTION = 12;
-        const uint8_t COLOR_SCORING = 6;
-        const uint8_t COLOR_HINTS = 8;
-        const uint8_t COLOR_CONTROLS = 15;
+        const ColorIndex COLOR_DESCRIPTION = (ColorIndex)12;
+        const ColorIndex COLOR_SCORING = (ColorIndex)6;
+        const ColorIndex COLOR_HINTS = (ColorIndex)8;
+        const ColorIndex COLOR_CONTROLS = (ColorIndex)15;
         gb.display.clear();
         processEvents();
 
-        tileset::applyPalette(0, 0, 127);
+        gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
+        gb.tft.colorCells.palettes[0] = (Color*) tileset::palette;
+        gb.tft.colorCells.palettes[1] = (Color*) Gamebuino_Meta::defaultColorPalette;
         gb.tft.colorCells.enabled = true;
-        uint32_t f = 0;
-        int sy = -4 - 8*18;
-        bool enteringAnimation = true;
+
+        uint8_t page = 0;
+        uint8_t f = 0;
+
+        setupPalettesForPages(page);
 
         while (1) {
             gb.display.clear();
+
+            if (page == 0) {
+                gb.display.setColor(2);
+                setTextFormat((ColorIndex)6, 2, 1, font4x7);
+                gb.display.print(0, 20, STR_HEADER);
             
-            gb.display.setColor(2);
-            setTextFormat((ColorIndex)14, 2, 1, font4x7);
-            gb.display.print(0, 0 - sy, STR_HEADER);
+                tileset::draw(tileSet, 4, 40, elements[0]);
+                tileset::draw(tileSet, 8, 40, elements[1]);
+                tileset::draw(tileSet, 8, 35, elements[2]);
+                tileset::draw(tileSet, 8, 40, elements[3]);
 
-            size_t ix = 0;
-            tileset::draw(tileSet, 4, 20 - sy, elements[ix++]);
-            tileset::draw(tileSet, 8, 20 - sy, elements[ix++]);
-            tileset::draw(tileSet, 8, 25 - sy, elements[ix++]);
-            tileset::draw(tileSet, 8, 30 - sy, elements[ix++]);
+                setTextFormat(COLOR_DESCRIPTION, 1, 1, font4x7);
+                gb.display.setColor(COLOR_DESCRIPTION);
+                gb.display.print(28, 38, STR_SHIP);
 
-            setTextFormat((ColorIndex)14, 1, 1, font4x7);
-            gb.display.setColor(COLOR_DESCRIPTION);
-            gb.display.print(28, 16 - sy, STR_SHIP);
-            gb.display.setColor(COLOR_CONTROLS);
-            gb.display.print(28, 28 - sy, STR_CONTROLS1);
-            gb.display.print(28, 36 - sy, STR_CONTROLS2);
-            gb.display.print(28, 44 - sy, STR_CONTROLS3);
+                gb.display.setColor(COLOR_CONTROLS);
+                gb.display.print(0, 54, STR_SHIP_CTRL1);
+                gb.display.print(0, 64, STR_SHIP_CTRL2);
+                gb.display.print(0, 74, STR_SHIP_CTRL3);
+                gb.display.print(0, 84, STR_SHIP_CTRL4);
+                gb.display.print(0, 94, STR_SHIP_CTRL5);
+            }
 
-            tileset::draw(tileSet, 4, 40 - sy, elements[ix++]);
-            tileset::draw(tileSet, 10, 40 - sy, elements[ix++]);
-            tileset::draw(tileSet, 16, 40 - sy, elements[ix++]);
-            tileset::draw(tileSet, 4, 46 - sy, elements[ix++]);
-            tileset::draw(tileSet, 10, 46 - sy, elements[ix++]);
-            tileset::draw(tileSet, 16, 46 - sy, elements[ix++]);
-            tileset::draw(tileSet, 7, 52 - sy, elements[ix++]);
-            tileset::draw(tileSet, 13, 52 - sy, elements[ix++]);
+            if (page == 1) {
+                tileset::draw(tileSet, 4, 20, elements[4]);
+                tileset::draw(tileSet, 10, 20, elements[5]);
+                tileset::draw(tileSet, 16, 20, elements[6]);
+                tileset::draw(tileSet, 4, 26, elements[7]);
+                tileset::draw(tileSet, 10, 26, elements[8]);
+                tileset::draw(tileSet, 16, 26, elements[9]);
+                tileset::draw(tileSet, 7, 32, elements[10]);
+                tileset::draw(tileSet, 13, 32, elements[11]);
+                
+                setTextFormat(COLOR_DESCRIPTION, 1, 1, font4x7);
+                gb.display.print(24, 20, STR_BLOCKS1);
+                gb.display.print(24, 30, STR_BLOCKS2);
+                
+                gb.display.setColor(COLOR_SCORING);
+                gb.display.print(0, 40, STR_SCORING1);
+
+                tileset::draw(tileSet, 4, 60, elements[12]);
+
+                gb.display.setColor(COLOR_DESCRIPTION);
+                gb.display.print(18, 55, STR_BLOCKS3);
+                gb.display.print(18, 65, STR_BLOCKS4);
+                gb.display.setColor(COLOR_CONTROLS);
+                gb.display.print(0, 80, STR_BOMB_CTRL1);
+                gb.display.print(0, 90, STR_BOMB_CTRL2);
+                gb.display.print(0, 100, STR_BOMB_CTRL3);
+                gb.display.setColor(COLOR_HINTS);
+                gb.display.print(0, 110, STR_LIGHTS_EN);
+
+            }
+            if (page == 2) {
+                setTextFormat(COLOR_DESCRIPTION, 1, 1, font4x7);
+                tileset::draw(tileSet, 4, 25, elements[13]);
+                
+                gb.display.print(18, 20, STR_BLOCKS5);
+                gb.display.print(18, 30, STR_BLOCKS6);
+
+                gb.display.setColor(COLOR_SCORING);
+                gb.display.print(0, 40, STR_SCORING2);
+
+                gb.display.setColor(COLOR_HINTS);
+                gb.display.print(0, 53, STR_BONUS_HINT1);
+                gb.display.print(0, 62, STR_BONUS_HINT2);
+                gb.display.print(0, 71, STR_BONUS_HINT3);
+
+                gb.display.print(0, 84, STR_HINT1A);
+                gb.display.print(0, 93, STR_HINT1B);
+                gb.display.print(0, 102, STR_HINT1C);
+                gb.display.print(0, 111, STR_HINT1D);
+                gb.display.print(0, 120, STR_HINT1E);
+            }
+
+            if (page == 3) {
+                setTextFormat(COLOR_HINTS, 1, 1, font4x7);
+                gb.display.print(0, 20, STR_HINT2A);
+                gb.display.print(0, 30, STR_HINT2B);
+                gb.display.print(0, 40, STR_HINT2C);
+                gb.display.print(0, 50, STR_HINT2D);
+                gb.display.print(0, 60, STR_HINT2E);
+                gb.display.print(0, 70, STR_HINT2F);
+
+                gb.display.print(0, 85, STR_HINT3A);
+                gb.display.print(0, 95, STR_HINT3B);
+                gb.display.print(0, 105, STR_HINT3C);
+                gb.display.print(0, 115, STR_HINT3D);
+            }
+
+            if (page == 4) {
+                setTextFormat(COLOR_HINTS, 1, 1, font4x7);
+                
+                gb.display.print(0, 20, STR_HINT3E);
+                gb.display.print(0, 30, STR_HINT3F);
+                gb.display.print(0, 40, STR_HINT3G);
+
+                setTextFormat(COLOR_SCORING, 1, 1, font4x7);
+
+                gb.display.print(0, 55, STR_SCORING3A);
+                gb.display.print(0, 65, STR_SCORING3B);
+                gb.display.print(0, 75, STR_SCORING3C);
+                gb.display.print(0, 85, STR_SCORING3D);
+                gb.display.print(0, 95, STR_SCORING3E);
+            }
+
+            if (page == 127) {
+                setTextFormat(INDEX_BEIGE, 1, 1, font4x7);
+                gb.display.print(0, 60, STR_HIDDEN1A);
+                gb.display.print(0, 68, STR_HIDDEN1B);
+
+            }
+
+            if (page == 128) {
+                gb.display.setColor(2);
+                setTextFormat((ColorIndex)6, 2, 1, font4x7);
+                gb.display.print(0, 20, "CUSTOM 4x7 FONT");
+
+                setTextFormat(COLOR_DESCRIPTION, 1, 1, font4x7);
+                for (uint8_t y = 0; y < 8; y++) {
+                    for (uint8_t x = 0; x < 16; x++) {
+                        gb.display.drawChar(x * 9, 40 + y * 8, (char)(y * 16 + x), 1);
+                    }
+                }
+            }
+
+            if (page == 129 || page == 130) {
+                gb.display.setColor(2);
+                setTextFormat((ColorIndex)6, 2, 1, font4x7);
+                if (page == 129) {
+                    gb.display.print(0, 20, "TILESET PALETTE");
+                } else {
+                    gb.display.print(0, 20, "DEFAULT PALETTE");
+                }
+
+                setTextFormat(COLOR_DESCRIPTION, 1, 3, font4x7);
+                for (uint8_t y = 0; y < 4; y++) {
+                    for (uint8_t x = 0; x < 4; x++) {
+                        gb.display.setColor(COLOR_DESCRIPTION);
+                        gb.display.printf(40 * x + 5, 20 * y + 40, "%d", (y*4+x));
+                        gb.display.setColor((ColorIndex)(y*4+x));
+                        gb.display.fillRect(40 * x + 16, 20 * y + 40, 20, 24);
+                    }
+                }
+
+            }
             
-            gb.display.setColor(COLOR_DESCRIPTION);
-            gb.display.print(28, 40 - sy, STR_BLOCKS1);
-            gb.display.print(28, 46 - sy, STR_BLOCKS2);
+            setTextFormat((ColorIndex)1, 1, 1, font4x7);
+
+            gb.display.setColor((ColorIndex)1);
+            if (page == 0) {
+                gb.display.print(0, 0, STR_PAGING_FIRST);
+            } else if (page == 4) {
+                gb.display.print(0, 0, STR_PAGING_LAST);
+            } else {
+                gb.display.print(0, 0, STR_PAGING_MID);
+            }
             
-            gb.display.setColor(COLOR_SCORING);
-            gb.display.print(28, 52 - sy, STR_SCORING1);
-
-            tileset::draw(tileSet, 4, 72 - sy, elements[ix++]);
-            
-            gb.display.setColor(COLOR_DESCRIPTION);
-            gb.display.print(28, 62 - sy, STR_BLOCKS3);
-            gb.display.print(28, 68 - sy, STR_BLOCKS4);
-            gb.display.setColor(COLOR_CONTROLS);
-            gb.display.print(28, 74 - sy, STR_CONTROLS4);
-            gb.display.print(28, 80 - sy, STR_CONTROLS5);
-
-            tileset::draw(tileSet, 4, 98 - sy, elements[ix++]);
-            
-            gb.display.setColor(COLOR_DESCRIPTION);
-            gb.display.print(28, 96 - sy, STR_BLOCKS5);
-            gb.display.print(28, 102 - sy, STR_BLOCKS6);
-
-            gb.display.setColor(COLOR_SCORING);
-            gb.display.print(28, 108 - sy, STR_SCORING2);
-
-            gb.display.setColor(COLOR_HINTS);
-            gb.display.print(0, 122 - sy, STR_HINT1A);
-            gb.display.print(0, 128 - sy, STR_HINT1B);
-            gb.display.print(0, 134 - sy, STR_HINT1C);
-
-            gb.display.print(0, 144 - sy, STR_HINT3);
-            gb.display.print(0, 150 - sy, STR_HINT4);
-            gb.display.print(0, 156 - sy, STR_HINT5);
-
-            gb.display.print(0, 166 - sy, STR_HINT6);
-            gb.display.print(0, 172 - sy, STR_HINT7);
-            gb.display.print(0, 178 - sy, STR_HINT8);
-            gb.display.print(0, 184 - sy, STR_HINT9);
-            gb.display.print(0, 190 - sy, STR_HINT10);
-
-            gb.display.setColor(COLOR_SCORING);
-            gb.display.print(0, 200 - sy, STR_SCORING3);
-            gb.display.print(0, 206 - sy, STR_SCORING4);
-            gb.display.print(0, 212 - sy, STR_SCORING5);
-            gb.display.print(0, 218 - sy, STR_SCORING6);
+            gb.display.print(0, 8, STR_RET_MENU);
 
             tileset::updateAnimation(elements, sizeof(elements) / sizeof(elements[0]));
 
@@ -193,29 +330,31 @@ namespace spaceshoot { namespace context { namespace instructions {
                 elements[13] = tileset::ElementID::Bonus1;
             }
             
-            gb.display.setColor(COLOR_DESCRIPTION);
-            gb.display.print(0, -256 - sy, STR_HIDDEN1);
-            gb.display.print(0, -250 - sy, STR_HIDDEN2);
-
             processEvents();
+
+            if (gb.buttons.pressed(BUTTON_MENU)) {
+                page = 127;
+            }
 
             if (gb.buttons.pressed(BUTTON_B)) {
                 return;
             }
-            if (buttonDown(BUTTON_DOWN)) {
-                sy+=5;
-            }
-            if (buttonDown(BUTTON_UP)) {
-                sy-=5;
-            }
-            f++;
-            if (enteringAnimation) {
-                if (sy < -4) {
-                    sy += 8;
-                } else {
-                    enteringAnimation = false;
+            if (buttonPressed(BUTTON_DOWN)) {
+                if (page < 4 || page >= 127) {
+                    page++;
+                    setupPalettesForPages(page);
                 }
             }
+            if (buttonPressed(BUTTON_UP)) {
+                if (page == 128) {
+                    page = 0;
+                    setupPalettesForPages(page);
+                } else if (page > 0) {
+                    page--;
+                    setupPalettesForPages(page);
+                }
+            }
+            f++;
         }
     }
 }}} // namespace spaceshoot::context::instructions
