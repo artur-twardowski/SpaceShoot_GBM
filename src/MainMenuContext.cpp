@@ -46,10 +46,11 @@ namespace spaceshoot { namespace context { namespace mainmenu {
     const char STR_GAME_DIFFICULTY_L6[] = "\x11 You shall not pass  ";
 
     const char STR_SMOOTH_SCROLLING[] = "Smooth scrolling";
-    const char STR_YES[] = "\x11 Enabled  ";
-    const char STR_NO[] = "  Disabled \x10";
+    const char STR_YES[] = "\x11 Yes  ";
+    const char STR_NO[] = "  No \x10";
     
-    const char STR_SHOW_PROFILING_INFO[] = "Profiling statistics";
+    const char STR_SHOW_PROFILING_INFO[] = "Show profiling statistics";
+    const char STR_SHOW_BACKGROUND[] = "Draw background stars";
 
     const char KEYS_HELP_M1[] = "\x13\x12:navigate menu, \x01\x08:confirm";
     const char KEYS_HELP_O1[] = "\x13\x12:navigate menu, \x02\x09:return";
@@ -133,62 +134,19 @@ namespace spaceshoot { namespace context { namespace mainmenu {
 
         VisibleScreen screen = VisibleScreen::Main;
 
+        bool fullRepaint = true;
+
         while (1) {
             processEvents();
             
-            gb.display.clear();
-            gb.display.drawImage(0, 0, backgroundImage);
-            gb.display.setFont(font4x7);
+            if (fullRepaint) {
+                gb.display.clear();
+                gb.display.drawImage(0, 0, backgroundImage);
+                memset(gb.tft.colorCells.paletteToLine, 0, SCREEN_HEIGHT);
+                gb.display.setFont(font4x7);
 
-            if (buttonPressed(BUTTON_UP)) {
-                if (position > 0)
-                    position--;
+                fullRepaint = false;
             }
-            if (buttonPressed(BUTTON_DOWN)) {
-                uint16_t lastPosition;
-                if (screen == VisibleScreen::Main) {
-                    lastPosition = static_cast<uint16_t>(MenuPosition::Count) - 1;
-                } else {
-                    lastPosition = 2;
-                }
-                if (position < lastPosition)
-                    position++;
-            }
-            if (buttonPressed(BUTTON_LEFT)) {
-                if (screen == VisibleScreen::Settings) {
-                    switch (position) {
-                    case 0: if (ctx.difficultyLevel > 0) ctx.difficultyLevel--; break;
-                    case 1: ctx.flags &= ~game::FLAG_SMOOTH_SCROLLING; break;
-                    case 2: ctx.flags &= ~game::FLAG_SHOW_PROFILING_INFO; break;
-                    }
-                }
-            }
-            if (buttonPressed(BUTTON_RIGHT)) {
-                if (screen == VisibleScreen::Settings) {
-                    switch (position) {
-                    case 0: if (ctx.difficultyLevel < 5) ctx.difficultyLevel++; break;
-                    case 1: ctx.flags |= game::FLAG_SMOOTH_SCROLLING; break;
-                    case 2: ctx.flags |= game::FLAG_SHOW_PROFILING_INFO; break;
-                    }
-                }
-            }
-            if (buttonPressed(BUTTON_A)) {
-                if (screen == VisibleScreen::Main) {
-                    if (static_cast<MenuPosition>(position) == MenuPosition::Settings) {
-                        screen = VisibleScreen::Settings;
-                        position = 0;
-                    } else {
-                        return static_cast<MenuPosition>(position);
-                    }
-                }
-            }
-            if (buttonPressed(BUTTON_B)) {
-                if (screen == VisibleScreen::Settings) {
-                    screen = VisibleScreen::Main;
-                }
-            }
-
-            memset(gb.tft.colorCells.paletteToLine, 0, SCREEN_HEIGHT);
 
             if (screen == VisibleScreen::Main) {
                 uint8_t y = 20;
@@ -208,9 +166,10 @@ namespace spaceshoot { namespace context { namespace mainmenu {
             }
 
             if (screen == VisibleScreen::Settings) {
-                drawMenuPosition(0, 24, STR_GAME_DIFFICULTY, position == 0);
-                drawMenuPosition(0, 47, STR_SMOOTH_SCROLLING, position == 1);
-                drawMenuPosition(0, 70, STR_SHOW_PROFILING_INFO, position == 2);
+                drawMenuPosition(0, 18, STR_GAME_DIFFICULTY, position == 0);
+                drawMenuPosition(0, 41, STR_SMOOTH_SCROLLING, position == 1);
+                drawMenuPosition(0, 64, STR_SHOW_BACKGROUND, position == 2);
+                drawMenuPosition(0, 87, STR_SHOW_PROFILING_INFO, position == 3);
 
                 const char* s;
                 switch (ctx.difficultyLevel) {
@@ -224,7 +183,7 @@ namespace spaceshoot { namespace context { namespace mainmenu {
 
                 // TODO: refactor
 
-                drawMenuPositionParam(35, s, position == 0);
+                drawMenuPositionParam(29, s, position == 0);
 
                 if (ctx.flags & game::FLAG_SMOOTH_SCROLLING) {
                     s = STR_YES;
@@ -232,7 +191,15 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                drawMenuPositionParam(58, s, position == 1);
+                drawMenuPositionParam(52, s, position == 1);
+
+                if (ctx.flags & game::FLAG_SHOW_BACKGROUND) {
+                    s = STR_YES;
+                } else {
+                    s = STR_NO;
+                }
+
+                drawMenuPositionParam(75, s, position == 2);
 
                 if (ctx.flags & game::FLAG_SHOW_PROFILING_INFO) {
                     s = STR_YES;
@@ -240,11 +207,64 @@ namespace spaceshoot { namespace context { namespace mainmenu {
                     s = STR_NO;
                 }
 
-                drawMenuPositionParam(81, s, position == 2);
+                drawMenuPositionParam(98, s, position == 3);
 
                 gb.display.setColor(12);
                 gb.display.print(10, 0, KEYS_HELP_O1);
                 gb.display.print(10, 8, KEYS_HELP_O2);
+            }
+
+            if (buttonPressed(BUTTON_UP)) {
+                if (position > 0)
+                    position--;
+            }
+            if (buttonPressed(BUTTON_DOWN)) {
+                uint16_t lastPosition;
+                if (screen == VisibleScreen::Main) {
+                    lastPosition = static_cast<uint16_t>(MenuPosition::Count) - 1;
+                } else {
+                    lastPosition = 3;
+                }
+                if (position < lastPosition)
+                    position++;
+            }
+            if (buttonPressed(BUTTON_LEFT)) {
+                if (screen == VisibleScreen::Settings) {
+                    switch (position) {
+                    case 0: if (ctx.difficultyLevel > 0) ctx.difficultyLevel--; break;
+                    case 1: ctx.flags &= ~game::FLAG_SMOOTH_SCROLLING; break;
+                    case 2: ctx.flags &= ~game::FLAG_SHOW_BACKGROUND; break;
+                    case 3: ctx.flags &= ~game::FLAG_SHOW_PROFILING_INFO; break;
+                    }
+                }
+            }
+            if (buttonPressed(BUTTON_RIGHT)) {
+                if (screen == VisibleScreen::Settings) {
+                    switch (position) {
+                    case 0: if (ctx.difficultyLevel < 5) ctx.difficultyLevel++; break;
+                    case 1: ctx.flags |= game::FLAG_SMOOTH_SCROLLING; break;
+                    case 2: ctx.flags |= game::FLAG_SHOW_BACKGROUND; break;
+                    case 3: ctx.flags |= game::FLAG_SHOW_PROFILING_INFO; break;
+                    }
+                }
+            }
+            if (buttonPressed(BUTTON_A)) {
+                if (screen == VisibleScreen::Main) {
+                    if (static_cast<MenuPosition>(position) == MenuPosition::Settings) {
+                        screen = VisibleScreen::Settings;
+                        position = 0;
+                        fullRepaint = true;
+                    } else {
+                        paletteSyncFadeToBlack(0, 8, 12);
+                        return static_cast<MenuPosition>(position);
+                    }
+                }
+            }
+            if (buttonPressed(BUTTON_B)) {
+                if (screen == VisibleScreen::Settings) {
+                    screen = VisibleScreen::Main;
+                    fullRepaint = true;
+                }
             }
 
         }

@@ -39,5 +39,6 @@ static inline void setTextFormat(ColorIndex color, uint8_t w, uint8_t h, const u
 }
 
 void paletteFadeFromBlack(uint16_t* dest, const uint16_t* src, unsigned int val, unsigned int max);
+void paletteSyncFadeToBlack(uint8_t firstPalette, uint8_t lastPalette, uint8_t fadeTime);
 
 #endif // SST_UTILS_H

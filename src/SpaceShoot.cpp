@@ -34,7 +34,7 @@ namespace spaceshoot {
 using MenuPosition = context::mainmenu::MenuPosition;
 using GameState = context::game::GameState;
 
-    const char VERSION[] = "v0.2-R720";
+    const char VERSION[] = "v0.2-R721";
 
     Image tileSet;
     context::game::Context ctx;
@@ -53,7 +53,7 @@ using GameState = context::game::GameState;
 
         tileset::load(tileSet);
         ctx.difficultyLevel = 2;
-        ctx.flags = context::game::FLAG_SMOOTH_SCROLLING;
+        ctx.flags = context::game::FLAG_SMOOTH_SCROLLING | context::game::FLAG_SHOW_BACKGROUND;
     }
 
     void main() {

@@ -34,6 +34,15 @@ bool buttonDown(Button button) {
     return bstate >= 1 && bstate < 0xFFFE;
 }
 
+void paletteSyncFadeToBlack(uint8_t firstPalette, uint8_t lastPalette, uint8_t fadeTime) {
+    for (int ix = 0; ix < fadeTime; ix++) {
+        for (size_t pal = firstPalette; pal <= lastPalette; pal++) {
+            paletteFadeFromBlack((uint16_t*)gb.tft.colorCells.palettes[pal], (uint16_t*)gb.tft.colorCells.palettes[pal], fadeTime - ix, fadeTime);
+        }
+        processEvents();
+    }
+}
+
 void paletteFadeFromBlack(uint16_t* dest, const uint16_t* src, unsigned int val, unsigned int max) {
     for (size_t ix = 0; ix < 16; ix++) {
         unsigned int r, g, b;

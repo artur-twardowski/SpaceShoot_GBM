@@ -60,6 +60,7 @@ namespace spaceshoot { namespace context { namespace game {
     const uint8_t BLOCK_MISSILE = 0x40;
     const uint8_t FLAG_SMOOTH_SCROLLING = 0x01;
     const uint8_t FLAG_SHOW_PROFILING_INFO = 0x02;
+    const uint8_t FLAG_SHOW_BACKGROUND = 0x04;
 
     void restart(Context& ctx);
     GameState run(Context& ctx, Image& tileset);

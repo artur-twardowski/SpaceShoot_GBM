@@ -50,6 +50,7 @@ struct AnimationSequence {
 };
 
 extern const AnimationSequence animSequences[];
+extern const uint16_t palette[];
 
 void load(Image& tileset);
 void draw(Image& tileset, uint16_t x, uint16_t y, ElementID id);

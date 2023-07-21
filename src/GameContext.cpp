@@ -535,10 +535,42 @@ using ElementID = tileset::ElementID;
             }
         }
     }
+    
+    static void drawBackground(uint16_t background[64]) {
+        static const ColorIndex COLORS[4] = {
+            (ColorIndex)2, (ColorIndex)13, (ColorIndex)7, (ColorIndex)14,
+        };
+        for (uint8_t ix = 0; ix < 64; ix++) {
+            uint8_t x = background[ix] & 0xFF;
+            uint8_t y = (background[ix] >> 8) & 0x3F;
+            uint8_t c = (background[ix] >> 14) & 0x03;
+
+            x += (gb.frameCount >> 3);
+
+            if (x < SCREEN_WIDTH) {
+                gb.display.drawPixel(x, GAMEBOARD_Y + y * 2, COLORS[c]);
+            }
+        }
+    }
 
     GameState run(Context& ctx, Image& tileset) {
         Color barsPalettes[16][8];
         tileset::ElementID playerTiles[4];
+
+        uint16_t background[64];
+
+        if (ctx.flags & FLAG_SHOW_BACKGROUND) {
+            for (uint8_t ix = 0; ix < sizeof(background) / sizeof(background[0]); ix++) {
+                uint8_t x = rand() & 0xFF; // mod 256
+                uint8_t y = rand() & 0x3F; // mod 64
+                uint8_t c = rand() & 0x03; // mod 4
+                const uint8_t max_y = NUM_ROWS * BLOCK_HEIGHT / 2;
+                if (y > max_y) {
+                    y -= max_y;
+                }
+                background[ix] = (c << 14) | (y << 8) | x;
+            }
+        }
 
         initColorCells(barsPalettes);
         initPlayerTiles(playerTiles);
@@ -595,8 +627,12 @@ using ElementID = tileset::ElementID;
             }
         }
 
+        /* Fast screen clear */
         memset(gb.display._buffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT / 2);
         drawBorders(ctx);
+        if (ctx.flags & FLAG_SHOW_BACKGROUND) {
+            drawBackground(background);
+        }
         drawGameField(ctx, tileset);
         drawPlayer(shipX, ctx.playerPosition, playerTiles, tileset);
 

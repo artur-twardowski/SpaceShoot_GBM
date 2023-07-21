@@ -25,7 +25,7 @@
 
 namespace spaceshoot { namespace tileset {
 
-const uint16_t tilesetPalette[16] = {
+const uint16_t palette[16] = {
     0x0000, 0x7061, 0x10f7, 0x5a60, 0x5aeb, 0x0480, 0xfacb, 0xe3a1, 
     0x9492, 0x0700, 0x9fdc, 0xff6f, 0xffff, 0x39e7, 0x8bac, 0x4adf
 };
@@ -111,7 +111,7 @@ void load(Image& tileset) {
 }
 
 void applyPalette(uint8_t paletteSlot, uint8_t firstRow, uint8_t lastRow) {
-    gb.tft.colorCells.palettes[paletteSlot] = (Color*)tilesetPalette;
+    gb.tft.colorCells.palettes[paletteSlot] = (Color*)palette;
     for (uint8_t ix = firstRow; ix <= lastRow; ix++) {
         gb.tft.colorCells.paletteToLine[ix] = paletteSlot;
     }
