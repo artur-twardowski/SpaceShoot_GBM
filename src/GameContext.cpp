@@ -25,12 +25,13 @@
 #include "Utils.h"
 #include "Tileset.h"
 #include "Gamebuino-Meta-ADTCRV.h"
-#include "utility/Misc.h"
+#include "utility/Misc/Misc.h"
 #include "utility/Graphics/font3x5.c"
 
 namespace spaceshoot { namespace context { namespace game {
 
 using ElementID = tileset::ElementID;
+#define RGB Gamebuino_Meta::rgb888Torgb565
 
     enum class DrawScene {
         Gameplay, Winning, Losing
@@ -42,6 +43,31 @@ using ElementID = tileset::ElementID;
         uint16_t bonusProbability;
         uint8_t densityIncreaseFactor;
     };
+
+    uint32_t illumination;
+    const uint8_t ILLUM_SHOOT0_BITPOS = 0;
+    const uint8_t ILLUM_SHOOT1_BITPOS = 1;
+    const uint8_t ILLUM_SHOOT2_BITPOS = 2;
+    const uint8_t ILLUM_SHOOT3_BITPOS = 3;
+    const uint8_t ILLUM_HIT0_BITPOS = 4;
+    const uint8_t ILLUM_HIT1_BITPOS = 5;
+    const uint8_t ILLUM_HIT2_BITPOS = 6;
+    const uint8_t ILLUM_HIT3_BITPOS = 7;
+
+    const uint32_t ILLUM_BOMB_BITMASK = 0x0300;
+    const uint32_t ILLUM_BOMB_BITPOS = 8;
+    const uint32_t ILLUM_BONUS_BITMASK = 0x0C00;
+    const uint32_t ILLUM_BONUS_BITPOS = 10;
+    const uint32_t ILLUM_SALVO_BITMASK = 0x3000;
+    const uint32_t ILLUM_SALVO_BITPOS = 12;
+    
+    static const uint8_t ROW_TO_LED[] = {
+        0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3
+    };
+    static_assert(sizeof(ROW_TO_LED) == NUM_ROWS);
 
     const DifficultyLevelParams DIFFICULTIES[] = {
         /* Very easy */          {TARGET_FPS * 50,  65, 37, 5},
@@ -67,7 +93,7 @@ using ElementID = tileset::ElementID;
         ctx.playerPosition = NUM_ROWS / 2;
     }
 
-    bool handleHit(Context& ctx, tileset::ElementID blockType) {
+    bool handleHit(Context& ctx, tileset::ElementID blockType, uint8_t row) {
         switch (blockType) {
         case ElementID::Stone:
         case ElementID::Debris1:
@@ -78,6 +104,8 @@ using ElementID = tileset::ElementID;
         case ElementID::Debris6:
         case ElementID::Debris7:
         case ElementID::Debris8:
+            illumination |= (1 << (4 + ROW_TO_LED[row]));
+
             ctx.score += 5;
             return true;
 
@@ -85,6 +113,7 @@ using ElementID = tileset::ElementID;
         case ElementID::Bomb2:
         case ElementID::Bomb3:
         case ElementID::Bomb4:
+            illumination |= ILLUM_BOMB_BITMASK;
             ctx.score += 5;
             ctx.bombsCollected++;
             ctx.numBombs++;
@@ -95,6 +124,7 @@ using ElementID = tileset::ElementID;
         case ElementID::Bonus2:
         case ElementID::Bonus3:
         case ElementID::Bonus4:
+            illumination |= ILLUM_BONUS_BITMASK;
             ctx.score += 125;
             ctx.bonusBlocksCollected++;
            // gb.sound.tone(1000, 4000);
@@ -133,7 +163,7 @@ using ElementID = tileset::ElementID;
             bool missile = game::getMissile(ctx, row, col);
             auto blk = game::getBlock(ctx, row, col);
 
-            if (missile && handleHit(ctx, blk)) {
+            if (missile && handleHit(ctx, blk, row)) {
                 ctx.hits++;
                 ctx.blocksPresent--;
                 game::setBlockClearMissile(ctx, row, col, ElementID::Destroyed1);
@@ -264,6 +294,7 @@ using ElementID = tileset::ElementID;
             }
             ctx.salvoCounter--;
             ctx.shoots += NUM_ROWS;
+            illumination |= ILLUM_SALVO_BITMASK;
         }
     }
 
@@ -402,6 +433,8 @@ using ElementID = tileset::ElementID;
                 playerTiles[PLAYER_TILE_FRONT_RIGHT] = tileset::ElementID::ShipFiringGlowRight;
                 playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFiringRight;
             }
+
+            illumination |= (1 << ROW_TO_LED[ctx.playerPosition]);
         }
         if (gb.buttons.pressed(BUTTON_B)) {
             salvo(ctx);
@@ -411,6 +444,95 @@ using ElementID = tileset::ElementID;
         }
         if (gb.buttons.pressed(BUTTON_MENU)) {
             drawScene = DrawScene::Losing;
+        }
+    }
+
+    static inline void setLed(uint8_t side, uint8_t row, bool hitFlash, uint8_t bombFlash, uint8_t bonusFlash, uint8_t salvoFlash) {
+        static const uint16_t BOMB_FLASH[] = {3 << 11, 7 << 11, 15 << 11, 31 << 11};
+        static const uint16_t BONUS_FLASH[] = {8 << 5, 15 << 5, 30 << 5, 63 << 5};
+        static const uint16_t SALVO_FLASH[] = {
+            (3 << 5) | 10,
+            (8 << 5) | 16,
+            (16 << 5) | 20,
+            (31 << 5) | 31,
+        };
+        if (bombFlash) {
+            gb.lights.drawPixel(side, row, (Color)BOMB_FLASH[bombFlash]);
+        } else if (bonusFlash) {
+            gb.lights.drawPixel(side, row, (Color)BONUS_FLASH[bombFlash]);
+        } else if (salvoFlash) {
+            gb.lights.drawPixel(side, row, (Color)SALVO_FLASH[salvoFlash]);
+        } else if (hitFlash) {
+            gb.lights.drawPixel(side, row, (Color)0xFF80);
+        } else {
+            gb.lights.drawPixel(side, row, (Color)0x0000);
+        }
+    }
+
+    static void updateGameplayIllumination() {
+        const uint32_t SHOOTS_HITS_MASK = 0xFF;
+
+        uint8_t bombFlash = (illumination & ILLUM_BOMB_BITMASK) >> ILLUM_BOMB_BITPOS;
+        uint8_t bonusFlash = (illumination & ILLUM_BONUS_BITMASK) >> ILLUM_BONUS_BITPOS;
+        uint8_t salvoFlash = (illumination & ILLUM_SALVO_BITMASK) >> ILLUM_SALVO_BITPOS;
+
+        setLed(0, 0, illumination & (1 << ILLUM_SHOOT0_BITPOS), bombFlash, 0, salvoFlash);
+        setLed(0, 1, illumination & (1 << ILLUM_SHOOT1_BITPOS), bombFlash, 0, salvoFlash);
+        setLed(0, 2, illumination & (1 << ILLUM_SHOOT2_BITPOS), bombFlash, 0, salvoFlash);
+        setLed(0, 3, illumination & (1 << ILLUM_SHOOT3_BITPOS), bombFlash, 0, salvoFlash);
+        setLed(1, 0, illumination & (1 << ILLUM_HIT0_BITPOS), bombFlash, bonusFlash, 0);
+        setLed(1, 1, illumination & (1 << ILLUM_HIT1_BITPOS), bombFlash, bonusFlash, 0);
+        setLed(1, 2, illumination & (1 << ILLUM_HIT2_BITPOS), bombFlash, bonusFlash, 0);
+        setLed(1, 3, illumination & (1 << ILLUM_HIT3_BITPOS), bombFlash, bonusFlash, 0);
+
+        illumination &= ~SHOOTS_HITS_MASK;
+        if (illumination & ILLUM_BOMB_BITMASK) {
+            illumination -= (1 << ILLUM_BOMB_BITPOS);
+        }
+        if (illumination & ILLUM_BONUS_BITMASK) {
+            illumination -= (1 << ILLUM_BONUS_BITPOS);
+        }
+        if (illumination & ILLUM_SALVO_BITMASK) {
+            illumination -= (1 << ILLUM_SALVO_BITPOS);
+        }
+    }
+
+    static void updateEndgameIllumination(uint8_t drawSceneCounter, bool winning) {
+        const uint16_t LEDS_ANIM_LOST[8][2] = {
+            {RGB({255, 255, 255}), RGB({128, 128,  96})},
+            {RGB({255, 255, 160}), RGB({128, 128,  72})},
+            {RGB({255, 255,  80}), RGB({128, 128,  52})},
+            {RGB({255, 160,   0}), RGB({128,  80,  32})},
+            {RGB({255,  80,   0}), RGB({128,  40,  32})},
+            {RGB({255,   0,   0}), RGB({128,   0,  32})},
+            {RGB({192,   0,   0}), RGB({ 96,   0,  32})},
+            {RGB({128,   0,   0}), RGB({ 64,   0,  32})},
+        };
+
+        const uint16_t LEDS_ANIM_WON[2][2] = {
+            {RGB({255,   0, 255}), RGB({  0, 128, 255})},
+            {RGB({  0, 255,   0}), RGB({  0,   0, 255})},
+        };
+
+
+        for (uint8_t side = 0; side <= 1; side++) {
+            if (winning && drawSceneCounter < 38) {
+                gb.lights.drawPixel(side, 0, (Color)LEDS_ANIM_WON[drawSceneCounter & 0x01][side]);
+                gb.lights.drawPixel(side, 1, (Color)LEDS_ANIM_WON[drawSceneCounter & 0x01][side]);
+                gb.lights.drawPixel(side, 2, (Color)LEDS_ANIM_WON[drawSceneCounter & 0x01][side]);
+                gb.lights.drawPixel(side, 3, (Color)LEDS_ANIM_WON[drawSceneCounter & 0x01][side]);
+
+            } else if (!winning && drawSceneCounter < 8) {
+                gb.lights.drawPixel(side, 0, (Color)LEDS_ANIM_LOST[drawSceneCounter][side]);
+                gb.lights.drawPixel(side, 1, (Color)LEDS_ANIM_LOST[drawSceneCounter][side]);
+                gb.lights.drawPixel(side, 2, (Color)LEDS_ANIM_LOST[drawSceneCounter][side]);
+                gb.lights.drawPixel(side, 3, (Color)LEDS_ANIM_LOST[drawSceneCounter][side]);
+            } else {
+                gb.lights.drawPixel(side, 0, (Color)0);
+                gb.lights.drawPixel(side, 1, (Color)0);
+                gb.lights.drawPixel(side, 2, (Color)0);
+                gb.lights.drawPixel(side, 3, (Color)0);
+            }
         }
     }
 
@@ -478,9 +600,16 @@ using ElementID = tileset::ElementID;
         drawGameField(ctx, tileset);
         drawPlayer(shipX, ctx.playerPosition, playerTiles, tileset);
 
-        if (drawScene == DrawScene::Gameplay) {
+        switch (drawScene) {
+        case DrawScene::Gameplay:
+            updateGameplayIllumination();
             handleButtons(ctx, playerTiles, drawScene);
-        }
+            break;
+        case DrawScene::Winning:
+            updateEndgameIllumination(drawSceneCounter, true);
+        case DrawScene::Losing:
+            updateEndgameIllumination(drawSceneCounter, false);
+        } 
 
         continueSalvo(ctx);
       }
