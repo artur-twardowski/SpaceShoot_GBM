@@ -298,7 +298,7 @@ using ElementID = tileset::ElementID;
         }
     }
 
-    static inline void initColorCells(Color barsPalettes[16][8]) {
+    static inline void initColorCells(Color barsPalettes[16][8], Color tilesPalette[16]) {
         /* Draw a blank frame to suppress artifacts */
         gb.tft.colorCells.enabled = false;
         gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
@@ -306,7 +306,8 @@ using ElementID = tileset::ElementID;
         processEvents();
 
         gb.tft.colorCells.enabled = true;
-        tileset::applyPalette(0, 8, SCREEN_HEIGHT - 8);
+        gb.tft.colorCells.palettes[0] = tilesPalette;
+        memset(gb.tft.colorCells.paletteToLine + 8, 0, SCREEN_HEIGHT - 8 - 8);
 
         for (size_t ix = 0; ix < 8; ix++) {
             size_t paletteIndex = ix + 1;
@@ -555,8 +556,8 @@ using ElementID = tileset::ElementID;
 
     GameState run(Context& ctx, Image& tileset) {
         Color barsPalettes[16][8];
+        Color tilesPalette[16];
         tileset::ElementID playerTiles[4];
-
         uint16_t background[64];
 
         if (ctx.flags & FLAG_SHOW_BACKGROUND) {
@@ -572,7 +573,9 @@ using ElementID = tileset::ElementID;
             }
         }
 
-        initColorCells(barsPalettes);
+        memcpy(tilesPalette, tileset::palette, sizeof(tilesPalette));
+
+        initColorCells(barsPalettes, tilesPalette);
         initPlayerTiles(playerTiles);
         
       DrawScene drawScene = DrawScene::Gameplay;
@@ -611,6 +614,7 @@ using ElementID = tileset::ElementID;
                     playerTiles[PLAYER_TILE_TAIL] = tileset::ElementID::ShipTailExploding;
                     playerTiles[PLAYER_TILE_FRONT] = tileset::ElementID::ShipFrontExploding;
                 } else if (drawSceneCounter == 16) {
+                    paletteSyncFadeToBlack(0, 8, 12);
                     return GameState::GameOverLost;
                 }
             } else if (drawScene == DrawScene::Winning) {
@@ -622,6 +626,7 @@ using ElementID = tileset::ElementID;
                 if (drawSceneCounter < 38) {
                     shipX = drawSceneCounter << 2;
                 } else if (drawSceneCounter == 38) {
+                    paletteSyncFadeToBlack(0, 8, 12);
                     return GameState::GameOverTimeout;
                 }
             }

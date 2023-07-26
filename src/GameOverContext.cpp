@@ -119,8 +119,13 @@ namespace spaceshoot { namespace context { namespace gameover {
         uint32_t showPhaseCounter = 0;
         uint32_t showPhase = 0;
 
-        gb.tft.colorCells.enabled = false;
+        uint16_t pal[16];
+        memcpy(pal, Gamebuino_Meta::defaultColorPalette, sizeof(pal));
+
+        gb.tft.colorCells.enabled = true;
         gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
+        gb.tft.colorCells.palettes[0] = (Color*)pal;
+        memset(gb.tft.colorCells.paletteToLine, 0, SCREEN_HEIGHT);
 
         if (ctx.shoots > 0) {
             accuracy = ctx.hits * 1000 / ctx.shoots;
@@ -168,9 +173,11 @@ namespace spaceshoot { namespace context { namespace gameover {
 
             if (showPhaseCounter >= 100) {
                 if (gb.buttons.pressed(BUTTON_A)) {
+                    paletteSyncFadeToBlack(0, 0, 12);
                     return false; /* Do not invoke the menu, jump right away to the game */
                 }
                 if (gb.buttons.pressed(BUTTON_B)) {
+                    paletteSyncFadeToBlack(0, 0, 12);
                     return true; /* Go back to menu */
                 }
             }

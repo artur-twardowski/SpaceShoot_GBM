@@ -34,7 +34,7 @@ namespace spaceshoot {
 using MenuPosition = context::mainmenu::MenuPosition;
 using GameState = context::game::GameState;
 
-    const char VERSION[] = "v0.2-R721";
+    const char VERSION[] = "v0.2-R726";
 
     Image tileSet;
     context::game::Context ctx;

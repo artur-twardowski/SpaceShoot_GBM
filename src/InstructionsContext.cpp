@@ -138,9 +138,15 @@ namespace spaceshoot { namespace context { namespace instructions {
         gb.display.clear();
         processEvents();
 
+        Color tilesetPalette[16];
+        Color defaultPalette[16];
+
+        memcpy(tilesetPalette, tileset::palette, sizeof(tilesetPalette));
+        memcpy(defaultPalette, Gamebuino_Meta::defaultColorPalette, sizeof(defaultPalette));
+
         gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
-        gb.tft.colorCells.palettes[0] = (Color*) tileset::palette;
-        gb.tft.colorCells.palettes[1] = (Color*) Gamebuino_Meta::defaultColorPalette;
+        gb.tft.colorCells.palettes[0] = tilesetPalette;
+        gb.tft.colorCells.palettes[1] = defaultPalette;
         gb.tft.colorCells.enabled = true;
 
         uint8_t page = 0;
@@ -337,6 +343,7 @@ namespace spaceshoot { namespace context { namespace instructions {
             }
 
             if (gb.buttons.pressed(BUTTON_B)) {
+                paletteSyncFadeToBlack(0, 1, 12);
                 return;
             }
             if (buttonPressed(BUTTON_DOWN)) {

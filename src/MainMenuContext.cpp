@@ -27,6 +27,7 @@
 #include "Utils.h"
 #include "utility/Misc.h"
 #include "font4x7.c"
+#include "TitleSoundtrack.h"
 
 namespace spaceshoot { namespace context { namespace mainmenu {
 
@@ -77,11 +78,16 @@ namespace spaceshoot { namespace context { namespace mainmenu {
             gb.tft.colorCells.paletteToLine[py] = PAL_IDX_MENUPOS + palIndex;
         }
 
-        gb.display.setColor(bgColor);
-        gb.display.fillRect(0, y-2, SCREEN_WIDTH, 11);
+        /* Fast lines' fill */
+        uint8_t f = (int)bgColor;
+        memset(gb.display._buffer + (y-2) * SCREEN_WIDTH / 4, (f << 4) | f, SCREEN_WIDTH * 11 / 2);
         
         gb.display.setColor(fgColor);
+        //if (str == STR_NEW_GAME || str == STR_GAME_DIFFICULTY) {
+        //    gb.display.printf(x, y, "%d, %d", gb.frameDurationMicros, gb.getCpuLoad());
+        //} else {
         gb.display.print(x, y, str);
+        //}
     }
 
     static void drawMenuPosition(uint8_t x, uint8_t y, const char* str, bool selected) {
@@ -135,9 +141,18 @@ namespace spaceshoot { namespace context { namespace mainmenu {
         VisibleScreen screen = VisibleScreen::Main;
 
         bool fullRepaint = true;
+        bool playMusicInMainMenu = false;
 
         while (1) {
             processEvents();
+
+            if (buttonDown(BUTTON_B) && buttonDown(BUTTON_RIGHT)) {
+                playMusicInMainMenu = true;
+            }
+
+            if (playMusicInMainMenu) {
+                title_soundtrack::play();
+            }
             
             if (fullRepaint) {
                 gb.display.clear();

@@ -28,6 +28,7 @@
 #include "Gamebuino-Meta-ADTCRV.h"
 #include <stdint.h>
 #include "Tileset.h"
+#include "TitleSoundtrack.h"
 #include "utility/Graphics/font3x5.c"
 #include "font4x7.c"
 
@@ -1355,98 +1356,111 @@ namespace spaceshoot { namespace context { namespace titlescreen {
         uint32_t frame_index = 0;
         
         while (1) {
-            gb.display.clear();
+            title_soundtrack::play();
 
-            TIMELINE(0, 0) {
+            TIMELINE(0x000, 0x000) {
                 img.init(devLogoData);
+                gb.display.clear();
             }
 
-            TIMELINE(1, 64) {
-                TIMELINE(1, 10) {
-                    paletteFadeFromBlack(pal, devLogoPalette, frame_index, 10);
-                    gb.tft.setPalette((Color*)pal);
-                }
-                TIMELINE(55, 64) {
-                    paletteFadeFromBlack(pal, devLogoPalette, 64 - frame_index, 10);
-                    gb.tft.setPalette((Color*)pal);
-                }
+            TIMELINE(0x001, 0x001) {
                 gb.display.drawImage(0, 0, img);
-
-                TIMELINE(26, 64) {
-                    gb.display.setFont(font4x7);
-                    gb.display.setFontSize(1, 1);
-                    TIMELINE(26, 40) {
-                        gb.display.setColor(frame_index - 26);
-                    }
-                    TIMELINE(41, 64) {
-                        gb.display.setColor(0x0E);
-                    }
-                    gb.display.print(SCREEN_WIDTH / 2 - 8 * 5 / 2, 100, "presents");
-                }
             }
 
-            TIMELINE(80, 140) {
-                TIMELINE(80, 80) {
-                    gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
-                }
-                TIMELINE(130, 140) {
-                    paletteFadeFromBlack(pal, (const uint16_t*)Gamebuino_Meta::defaultColorPalette, 140 - frame_index, 10);
-                    gb.tft.setPalette((Color*)pal);
-                }
-                TIMELINE(80, 140) {
-                    setTextFormat(INDEX_LIGHTBLUE, 1, 1, font4x7);
-                    gb.display.setColor(INDEX_LIGHTBLUE);
-                    gb.display.print(80 - strlen(STR_DEVS2_1) * 5 / 2, 12, STR_DEVS2_1);
-                    gb.display.print(80 - strlen(STR_DEVS2_1a) * 5 / 2, 20, STR_DEVS2_1a);
-                }
-                TIMELINE(85, 140) {
-                    setTextFormat(INDEX_LIGHTGREEN, 1, 2, font4x7);
-                    gb.display.print(80 - strlen(STR_DEVS2_2) * 5 / 2, 38, STR_DEVS2_2);
-                }
-                TIMELINE(90, 140) {
-                    setTextFormat(INDEX_LIGHTBLUE, 1, 1, font4x7);
-                    gb.display.print(80 - strlen(STR_DEVS2_3) * 5 / 2, 76, STR_DEVS2_3);
-                }
-                TIMELINE(95, 140) {
-                    setTextFormat(INDEX_BEIGE, 1, 3, font4x7);
-                    gb.display.print(80 - strlen(STR_DEVS2_4) * 5 / 2, 94, STR_DEVS2_4);
-                }
+            TIMELINE(0x001, 0x00A) {
+                paletteFadeFromBlack(pal, devLogoPalette, frame_index, 10);
+                gb.tft.setPalette((Color*)pal);
             }
 
-            TIMELINE(149, 149){
+            TIMELINE(0x040, 0x5F) {
+                gb.display.setFont(font4x7);
+                gb.display.setFontSize(1, 1);
+                gb.display.setColor(0x0E);
+                gb.display.print(SCREEN_WIDTH / 2 - 8 * 5 / 2, 100, "presents");
+            }
+            TIMELINE(0x60, 0x60) {
+                /* fast screen clear */
+                memset(gb.display._buffer + SCREEN_WIDTH * 100 / 2, 0x00, SCREEN_WIDTH * 8 / 2);
+            }
+
+
+            TIMELINE(0x70, 0x7A) {
+                paletteFadeFromBlack(pal, devLogoPalette, 0x7A - frame_index, 10);
+                gb.tft.setPalette((Color*)pal);
+            }
+
+            TIMELINE(0x7C, 0x7C) {
+                gb.tft.setPalette(Gamebuino_Meta::defaultColorPalette);
+                gb.display.clear();
+            }
+
+            TIMELINE(0x80, 0x80) {
+                setTextFormat(INDEX_LIGHTBLUE, 1, 1, font4x7);
+                gb.display.setColor(INDEX_LIGHTBLUE);
+                gb.display.print(80 - strlen(STR_DEVS2_1) * 5 / 2, 12, STR_DEVS2_1);
+                gb.display.print(80 - strlen(STR_DEVS2_1a) * 5 / 2, 20, STR_DEVS2_1a);
+            }
+            TIMELINE(0x84, 0x84) {
+                setTextFormat(INDEX_LIGHTGREEN, 1, 2, font4x7);
+                gb.display.print(80 - strlen(STR_DEVS2_2) * 5 / 2, 38, STR_DEVS2_2);
+            }
+            TIMELINE(0x90, 0x90) {
+                setTextFormat(INDEX_LIGHTBLUE, 1, 1, font4x7);
+                gb.display.print(80 - strlen(STR_DEVS2_3) * 5 / 2, 76, STR_DEVS2_3);
+            }
+            TIMELINE(0x98, 0x98) {
+                setTextFormat(INDEX_BEIGE, 1, 3, font4x7);
+                gb.display.print(80 - strlen(STR_DEVS2_4) * 5 / 2, 94, STR_DEVS2_4);
+            }
+
+            TIMELINE(0xF0, 0xFA) {
+                paletteFadeFromBlack(pal, (const uint16_t*)Gamebuino_Meta::defaultColorPalette, 0xFA - frame_index, 10);
+                gb.tft.setPalette((Color*)pal);
+            }
+
+            TIMELINE(0xFC, 0xFC){
+                gb.display.clear();
+            }
+
+            TIMELINE(0xFE, 0xFE) {
                 img.init(gameLogoData);
                 gb.display.setPalette((const Color*)gameLogoPalette);
             }
-            TIMELINE(150, 170){
 
-                TIMELINE(150, 160) {
-                    paletteFadeFromBlack(pal, gameLogoPalette, frame_index - 150, 10);
-                    gb.display.setPalette((Color*)pal);
-                }
-                TIMELINE(161, 165) {
-                    paletteFadeFromBlack(pal, gameLogoPalette, 171 - frame_index, 10);
-                    gb.display.setPalette((Color*)pal);
-                }
+            TIMELINE(0x100, 0x100) {
                 gb.display.drawImage(0, 0, img);
-                TIMELINE(160, 168) {
-                    gb.display.setColor(8);
-                    gb.display.print(SCREEN_WIDTH - strlen(VERSION) * 4, 120, VERSION);
-                }
             }
+
+            TIMELINE(0x100, 0x10A){
+                paletteFadeFromBlack(pal, gameLogoPalette, frame_index - 0x100, 10);
+                gb.display.setPalette((Color*)pal);
+            }
+
+            TIMELINE(267, 267) {
+                gb.display.setColor(8);
+                gb.display.print(SCREEN_WIDTH - strlen(VERSION) * 4, 120, VERSION);
+            }
+
+            TIMELINE(268, 278) {
+                paletteFadeFromBlack(pal, gameLogoPalette, 278 - frame_index, 10);
+                gb.display.setPalette((Color*)pal);
+            }
+
             processEvents();
             if (buttonPressed(BUTTON_A)) {
-                TIMELINE(0, 150) {
-                    frame_index = 167;
+                TIMELINE(0, 256) {
+                    frame_index = 268;
                 }
-                if (frame_index == 160) {
+                if (frame_index == 267) {
                     frame_index++;
                 }
             }
             if (buttonPressed(BUTTON_MENU)) {
                 frame_index = 100;
             }
-            if (frame_index != 160) frame_index++;
-            if (frame_index == 168) break;
+            if (frame_index != 267) frame_index++;
+            if (frame_index == 278) break;
+
         }
     }
 }}} // namespace spaceshoot::context::titlescreen
